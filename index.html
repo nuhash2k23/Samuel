@@ -169,7 +169,7 @@
       gltfLoader.load('/adsholder.glb', gltf => {
         fullModel = gltf.scene;
         fullModel.position.set(0,-2,0);
-        // fullModel.scale.y *= 1.072;
+
         fullModel.traverse(o => {
           if (o.name) modelParts[o.name] = o;
           if (o.isMesh) {
@@ -196,15 +196,16 @@
           resize();
         });
 
-        // create hotspots
+       // create hotspots
         const posList = [
           [0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.3,0.003],
           [-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.3,0.003]
         ];
         posList.forEach((p,i) => {
-          const zOff = 0.01;
+          // original thin offset + 0.12 closer
+          const hotspotZOffset = 0.01 - 0.04;
           const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: plusTex, transparent: true }));
-          sp.position.set(p[0], p[1] - 2, p[2] + zOff);
+          sp.position.set(p[0], p[1] - 2, p[2] + hotspotZOffset);
           sp.scale.set(0.075, 0.075, 1);
           sp.userData = {
             id: i,
@@ -225,7 +226,6 @@
       );
       const mat = el.dataset.material;
       if (mat === 'metal') {
-        // remove any loaded glass mesh
         if (glassBaseMesh) {
           scene.remove(glassBaseMesh);
           glassBaseMesh = null;
@@ -233,11 +233,8 @@
         modelParts.metalbase && (modelParts.metalbase.visible = true);
         modelParts.glassbase && (modelParts.glassbase.visible = false);
       } else {
-        // hide metal
         modelParts.metalbase && (modelParts.metalbase.visible = false);
-        // remove old glass if exists
         if (glassBaseMesh) scene.remove(glassBaseMesh);
-        // load and add glass base
         gltfLoader.load('/glassbase.glb', g => {
           glassBaseMesh = g.scene;
           glassBaseMesh.position.copy(fullModel.position);
@@ -251,33 +248,53 @@
     const mapR = { a4vertical:'a4vertlf8', a4landscape:'a4landslf8', a5vertical:'a5vertlf8', a5landscape:'a5landslf8' };
     const mapL = { a4vertical:'a4vertr8', a4landscape:'a4landsr8', a5vertical:'a5vertr8', a5landscape:'a5landsr8' };
 
-    function pick(x,y){
+    function pick(x,y) {
       ray.setFromCamera(new THREE.Vector2(x,y), camera);
       const hit = ray.intersectObjects(sprites)[0];
       return hit ? hit.object : null;
     }
 
+    // pointerdown with mobile feedback
     renderer.domElement.addEventListener('pointerdown', e => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const sp = pick(mouse.x, mouse.y);
-      if (!sp) return;
-      if (sheets[sp.userData.id]) {
-        scene.remove(sheets[sp.userData.id]);
-        delete sheets[sp.userData.id];
-        sp.material.map = sp.userData.textures.plus;
-        sp.material.needsUpdate = true;
-        active = sp;
-      } else if (active === sp) {
-        sp.material.map = sp.userData.textures.plus;
-        sp.material.needsUpdate = true;
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const hit = pick(x, y);
+
+      // simulate hover on tap
+      sprites.forEach(sp => {
+        if (sp === hit) {
+          if (sp.material.map === sp.userData.textures.plus) sp.material.map = sp.userData.textures.hover;
+          else if (sp.material.map === clearTex) sp.material.map = clearHoverTex;
+          sp.material.needsUpdate = true;
+        } else {
+          if (sp.material.map === sp.userData.textures.hover) {
+            sp.material.map = sp.userData.textures.plus;
+            sp.material.needsUpdate = true;
+          }
+          if (sp.material.map === clearHoverTex) {
+            sp.material.map = clearTex;
+            sp.material.needsUpdate = true;
+          }
+        }
+      });
+
+      if (!hit) return;
+      if (sheets[hit.userData.id]) {
+        scene.remove(sheets[hit.userData.id]);
+        delete sheets[hit.userData.id];
+        hit.material.map = hit.userData.textures.plus;
+        hit.material.needsUpdate = true;
+        active = hit;
+      } else if (active === hit) {
+        hit.material.map = hit.userData.textures.plus;
+        hit.material.needsUpdate = true;
         active = null;
       } else {
-        sp.material.map = sp.userData.textures.clear;
-        sp.material.needsUpdate = true;
-        active = sp;
+        hit.material.map = hit.userData.textures.clear;
+        hit.material.needsUpdate = true;
+        active = hit;
       }
     }, { passive: false });
 
@@ -287,18 +304,20 @@
         const fmt = b.dataset.format;
         const side = active.userData.side;
         const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb';
-        if (sheets[active.userData.id]) {
-          scene.remove(sheets[active.userData.id]);
-        }
+        if (sheets[active.userData.id]) scene.remove(sheets[active.userData.id]);
+
         gltfLoader.load('/' + file, g => {
           const s = g.scene;
           const bb = new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
           const grp = new THREE.Group();
           grp.add(s);
+
+          // sheet placed at original hotspot baseZ
           const p = active.position.clone();
           p.z = active.userData.baseZ;
           p.x += side === 'left' ? 0.025 : -0.025;
+
           grp.position.copy(p);
           grp.quaternion.copy(fullModel.quaternion);
           grp.scale.copy(fullModel.scale);
@@ -314,9 +333,9 @@
       const rect = canvas.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hit = pick(x, y);
+      const hoverHit = pick(x, y);
       sprites.forEach(sp => {
-        if (sp === hit) {
+        if (sp === hoverHit) {
           if (sp.material.map === sp.userData.textures.plus) {
             sp.material.map = sp.userData.textures.hover;
             sp.material.needsUpdate = true;
@@ -335,9 +354,9 @@
           }
         }
       });
-      if (hit !== hov) {
+      if (hoverHit !== hov) {
         if (hov) gsap.to(hov.scale, { x:0.075, y:0.075, duration:0.3, ease:'power2.out' });
-        hov = hit;
+        hov = hoverHit;
         if (hov) gsap.to(hov.scale, { x:0.1125, y:0.1125, duration:0.3, ease:'power2.out' });
       }
     });
