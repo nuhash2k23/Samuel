@@ -6,149 +6,36 @@
   <title>FLOW-FOIL Luminous Freestanding Display Kit Configurator</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-      user-select: none;
-    }
-    :root {
-      --primary: #000;
-      --secondary: #fff;
-      --accent: #06d6a2;
-      --gray-light: #f5f5f5;
-      --gray: #e0e0e0;
-      --gray-dark: #888;
-    }
-    body {
-      background: var(--secondary);
-      overflow: hidden;
-    }
-    .container {
-      display: flex;
-      height: 100vh;
-    }
-    .canvas-container {
-      position: relative;
-      width: 45%;
-      height: 100%;
-      background: url('bg.jpg') bottom/cover no-repeat;
-    }
-    #canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(5px);
-      z-index: 10;
-    }
-    .spinner {
-      border: 5px solid rgba(255, 255, 255, 0.3);
-      border-top: 5px solid var(--accent);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; user-select: none; }
+    :root { --primary: #000; --secondary: #fff; --accent: #06d6a2; --gray-light: #f5f5f5; --gray: #e0e0e0; --gray-dark: #888; }
+    body { background: var(--secondary); overflow: hidden; }
+    .container { display: flex; height: 100vh; }
+    .canvas-container { position: relative; width: 45%; height: 100%; background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%); }
+    #canvas { width: 100%; height: 100%; display: block; }
+    .loading-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 10; }
+    .spinner { border: 5px solid rgba(255, 255, 255, 0.3); border-top: 5px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .configurator {
-      width: 55%;
-      padding: 40px;
-      overflow-y: auto;
-      background: var(--secondary);
-    }
+    .configurator { width: 55%; padding: 40px; overflow-y: auto; background: var(--secondary); }
     h1 { font-size: 28px; margin-bottom: 8px; }
     .subtitle { font-size: 13px; color: var(--gray-dark); margin-bottom: 24px; }
     p, h2 { font-size: 15px; color: var(--gray-dark); margin-bottom: 24px; }
     h2 { font-size: 20px; margin-top: 32px; }
     .required { color: var(--accent); }
-    .material-options,
-    .hotspot-panel {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 32px;
-    }
-    .material-option,
-    .hotspot-panel button {
-      border: 1px solid var(--gray);
-      border-radius: 6px;
-      padding: 12px 18px;
-      background: var(--secondary);
-      cursor: pointer;
-      transition: all .3s;
-    }
-    .material-option.active,
-    .hotspot-panel button.active {
-      border-color: var(--accent);
-      background: rgba(0, 255, 0, 0.05);
-    }
-    .material-option:hover,
-    .hotspot-panel button:hover {
-      transform: translateY(-2px);
-      border-color: var(--primary);
-    }
-    .footer {
-      font-size: 12px;
-      color: var(--gray-dark);
-      text-align: center;
-      margin-top: 40px;
-    }
+    .material-options, .hotspot-panel { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+    .material-option, .hotspot-panel button { border: 1px solid var(--gray); border-radius: 6px; padding: 12px 18px; background: var(--secondary); cursor: pointer; transition: all .3s; }
+    .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0, 255, 0, 0.05); }
+    .material-option:hover, .hotspot-panel button:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .footer { font-size: 12px; color: var(--gray-dark); text-align: center; margin-top: 40px; }
     .mobile-sheet-buttons { display: none; }
-
-    /* —— Mobile tweaks —— */
     @media (max-width: 768px) {
-      body {
-        overflow-y: auto;
-      }
-      .container {
-        flex-direction: column;
-        height: auto;
-      }
-      .canvas-container {
-        width: 100%;
-        height: 80vh;
-      }
-      #canvas {
-        height: 100%;
-      }
-      .configurator {
-        width: 100%;
-        height: 50vh;
-        overflow-y: auto;
-      }
-      /* hide desktop-only elements */
-      .hotspot-panel {
-        display: none;
-      }
-      .sheet-format-heading,
-      .instructions {
-        display: none;
-      }
-      .mobile-sheet-buttons {
-        display: flex;
-        position: absolute;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        gap: 12px;
-        z-index: 5;
-      }
-      .mobile-sheet-buttons button {
-        border: 1px solid var(--gray);
-        border-radius: 6px;
-        padding: 8px 12px;
-        background: var(--secondary);
-        backdrop-filter: blur(5px);
-      }
+      body { overflow-y: auto; }
+      .container { flex-direction: column; height: auto; }
+      .canvas-container { width: 100%; height: 80vh; }
+      #canvas { height: 100%; }
+      .configurator { width: 100%; height: 50vh; overflow-y: auto; }
+      .hotspot-panel, .sheet-format-heading, .instructions { display: none; }
+      .mobile-sheet-buttons { display: flex; position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); gap: 12px; z-index: 5; }
+      .mobile-sheet-buttons button { border: 1px solid var(--gray); border-radius: 6px; padding: 8px 12px; background: var(--secondary); backdrop-filter: blur(5px); }
     }
   </style>
 </head>
@@ -166,12 +53,8 @@
     </div>
     <div class="configurator">
       <h1>FLOW-FOIL Luminous Freestanding Display Kit</h1>
-      <p class="subtitle">
-        Modular luminous floor display ideal for positioning in travel agencies, trade fair stands, events, real estate agencies, shops, conference rooms, etc.
-      </p>
-      <p class="instructions">
-        Click any hotspot to load your sheet format. Toggle base material below, then choose sheet:
-      </p>
+      <p class="subtitle">Modular luminous floor display ideal for positioning in travel agencies, trade fair stands, events, real estate agencies, shops, conference rooms, etc.</p>
+      <p class="instructions">Click any hotspot to load your sheet format. Toggle base material below, then choose sheet:</p>
       <h2>Choose base material<span class="required">*</span></h2>
       <div class="material-options">
         <div class="material-option active" data-material="metal">Metal</div>
@@ -189,265 +72,148 @@
   </div>
 
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/",
-      "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"
-    }
-  }
+    {"imports":{"three":"https://unpkg.com/three@0.152.2/build/three.module.js","three/addons/":"https://unpkg.com/three@0.152.2/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"}}
   </script>
   <script type="module">
-  import * as THREE from 'three';
-  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-  import { gsap } from 'gsap';
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { gsap } from 'gsap';
 
-  // Renderer & Scene
-  const canvas = document.getElementById('canvas');
-  const loading = document.querySelector('.loading-overlay');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.8;
+    const canvas = document.getElementById('canvas');
+    const loading = document.querySelector('.loading-overlay');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.48;
 
-  function resize() {
-    let w = window.innerWidth > 768 ? window.innerWidth * 0.45 : window.innerWidth;
-    let h;
-    if (window.innerWidth <= 768) {
-      h = window.innerHeight * 0.8;
-    } else {
-      h = window.innerHeight;
+    function resize() {
+      let w = window.innerWidth > 768 ? window.innerWidth * 0.45 : window.innerWidth;
+      let h = window.innerWidth <= 768 ? window.innerHeight * 0.8 : window.innerHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
     }
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  window.addEventListener('resize', resize);
+    window.addEventListener('resize', resize);
 
-  // Camera & Controls
-  const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
-camera.position.set(0, 1.5, -4.73);
-  const target = new THREE.Vector3(0, -1, 0);
-  const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(target));
-  function updateCamera() {
-    const pos = new THREE.Vector3().setFromSpherical(sph).add(target);
-    camera.position.copy(pos);
-    camera.lookAt(target);
-  }
+    const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
+    camera.position.set(0, 1.5, -2.73);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, -1, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 1;
+    controls.maxDistance = 20;
+    controls.minPolarAngle = 0.1;
+    controls.maxPolarAngle = Math.PI - 0.1;
 
-  // Pointer interactions
-  let mode = null, prev = new THREE.Vector2(), panOffset = new THREE.Vector3();
-  const panSpeed = 0.002, rotSpeed = 0.005, zoomSpeed = 0.1;
-  canvas.addEventListener('pointerdown', e => {
-    mode = (e.pointerType === 'touch' || e.button === 0) ? 'rotate' : 'pan';
-    prev.set(e.clientX, e.clientY);
-  });
-  canvas.addEventListener('pointermove', e => {
-    if (!mode) return;
-    const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
-    prev.set(e.clientX, e.clientY);
-    if (mode === 'rotate') {
-      sph.theta -= dx * rotSpeed;
-      sph.phi   -= dy * rotSpeed;
-      sph.phi = Math.max(0.1, Math.min(Math.PI - 0.1, sph.phi));
-    } else {
-      const offset = camera.position.clone().sub(target);
-      const right = new THREE.Vector3().crossVectors(camera.up, offset).normalize().multiplyScalar(-dx * panSpeed);
-      const up    = camera.up.clone().normalize().multiplyScalar(dy * panSpeed);
-      panOffset.copy(right).add(up);
-      target.add(panOffset);
+    const scene = new THREE.Scene();
+    scene.add(new THREE.AmbientLight(0xffffff, 0.726));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.7318);
+    dl.position.set(2, 3, 7); dl.castShadow = true; scene.add(dl);
+    const fl = new THREE.DirectionalLight(0xffffff, 0.063);
+    fl.position.set(-1, 4, -3); scene.add(fl);
+
+    function makeHotspotTex(fill) {
+      const size = 128;
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      const ctx = c.getContext('2d'); const r = size / 2;
+      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = size * 0.12;
+      const L = size * 0.6;
+      ctx.beginPath(); ctx.moveTo(r - L / 2, r); ctx.lineTo(r + L / 2, r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r, r - L / 2); ctx.lineTo(r, r + L / 2); ctx.stroke();
+      return new THREE.CanvasTexture(c);
     }
-    updateCamera();
-  });
-  canvas.addEventListener('pointerup',   () => mode = null);
-  canvas.addEventListener('pointerleave',() => mode = null);
-  canvas.addEventListener('wheel', e => {
-    sph.radius *= 1 + (e.deltaY > 0 ? zoomSpeed : -zoomSpeed);
-    sph.radius = Math.max(1, Math.min(20, sph.radius));
-    updateCamera();
-  });
-  canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-  // Scene & Lights
-  const scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0xffffff, 0.726));
-  const dl = new THREE.DirectionalLight(0xffffff, 0.318);
-  dl.position.set(5, 10, 7); dl.castShadow = true; scene.add(dl);
-  const fl = new THREE.DirectionalLight(0xffffff, 0.3);
-  fl.position.set(-5, 4, -3); scene.add(fl);
+    function makeClearHotspotTex(fill) {
+      const size = 128;
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      const ctx = c.getContext('2d'); const r = size / 2;
+      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = size * 0.12;
+      const L = size * 0.6;
+      ctx.beginPath(); ctx.moveTo(r - L / 2, r - L / 2); ctx.lineTo(r + L / 2, r + L / 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r + L / 2, r - L / 2); ctx.lineTo(r - L / 2, r + L / 2); ctx.stroke();
+      return new THREE.CanvasTexture(c);
+    }
 
-  // Hotspot texture
-  function makeHotspotTex() {
-    const size = 128, c = document.createElement('canvas');
-    c.width = c.height = size;
-    const ctx = c.getContext('2d'), r = size/2;
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(r, r, r, 0, 2*Math.PI); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = size*0.12;
-    const L = size*0.6;
-    ctx.beginPath(); ctx.moveTo(r-L/2, r); ctx.lineTo(r+L/2, r); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r, r-L/2); ctx.lineTo(r, r+L/2); ctx.stroke();
-    return new THREE.CanvasTexture(c);
-  }
-  const hotspotMap = makeHotspotTex();
+    const hotspotMap = makeHotspotTex('#000');
+    const activeHotspotMap = makeHotspotTex('#06d6a2');
+    const clearMap = makeClearHotspotTex('#000');
+    const clearHoverMap = makeClearHotspotTex('#ff0000');
 
-  // Loaders
-  const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
-  const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
-  const rgbeLoader = new RGBELoader();
+    const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
+    const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
+    const rgbeLoader = new RGBELoader();
 
-  let fullModel, modelParts = {}, sheets = {}, sprites = [], glassBase = null;
+    let fullModel; const modelParts = {}; const sheets = {}; const sprites = [];
+    let glassBase = null; let active = null; let hov = null;
+    const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2();
 
-  rgbeLoader.load('docklands_02_1k.hdr',
-    hdr => { hdr.mapping = THREE.EquirectangularReflectionMapping; scene.environment = hdr; loadHolder(); },
-    undefined, loadHolder
-  );
+    rgbeLoader.load('docklands_02_1k.hdr', hdr => { hdr.mapping = THREE.EquirectangularReflectionMapping; scene.environment = hdr; loadHolder(); }, undefined, loadHolder);
 
-  function loadHolder() {
-    gltfLoader.load('/adsholder.glb', gltf => {
-      fullModel = gltf.scene; fullModel.position.set(0, -2, 0);
-      
-      fullModel.traverse(o => {
-        if (o.name) modelParts[o.name] = o;
-        if (o.isMesh) {
-          o.castShadow = o.receiveShadow = true;
-          if (o.material?.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        }
-      });
-      modelParts.metalbase  && (modelParts.metalbase.visible  = true);
-      modelParts.glassbase  && (modelParts.glassbase.visible  = false);
-      scene.add(fullModel);
-
-      // initial sheet
-      gltfLoader.load('/a4landsr8.glb', g => {
-        const sheet = g.scene, bb = new THREE.Box3().setFromObject(sheet);
-        sheet.position.y -= bb.min.y;
-        const g2 = new THREE.Group(); g2.add(sheet);
-        g2.position.set(0, 1.753 - 2, 0.003);
-        g2.quaternion.copy(fullModel.quaternion);
-        g2.scale.copy(fullModel.scale);
-        scene.add(g2);
-        sheets[5] = g2;
-        loading.style.display = 'none';
-        resize(); updateCamera();
-      });
-
-      // hotspots
-      const posList = [
-        [0.021,1.753,0.003],[0.021,1.404,0.003],[0.021,1.07,0.003],
-        [0.021,0.726,0.03],[0.021,0.365,0.003],
-        [-0.02,1.753,0.003],[-0.02,1.404,0.003],[-0.02,1.07,0.003],
-        [-0.02,0.726,0.03],[-0.02,0.365,0.003]
-      ];
-      posList.map(p => [p[0], p[1]-2, p[2]]).forEach((pos,i) => {
-        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:hotspotMap, transparent:true }));
-        sp.position.set(...pos); sp.scale.set(0.075,0.075,1);
-        sp.userData = { id:i, side: pos[0]>0?'right':'left' };
-        scene.add(sp); sprites.push(sp);
-      });
-    });
-  }
-
-  // Material toggle
-  document.querySelectorAll('.material-option').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b===el));
-      const mat = el.dataset.material;
-      if (mat==='metal') {
+    function loadHolder() {
+      gltfLoader.load('/adsholder.glb', gltf => {
+        fullModel = gltf.scene; fullModel.position.set(0, -2, 0);
+        fullModel.traverse(o => { if (o.name) modelParts[o.name] = o; if (o.isMesh) { o.castShadow = o.receiveShadow = true; if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy(); }});
         modelParts.metalbase && (modelParts.metalbase.visible = true);
-        glassBase && (scene.remove(glassBase), glassBase = null);
         modelParts.glassbase && (modelParts.glassbase.visible = false);
-      } else {
-        modelParts.metalbase && (modelParts.metalbase.visible = false);
-        modelParts.glassbase && (modelParts.glassbase.visible = false);
-        if (!glassBase) {
-          gltfLoader.load('/glassbase.glb', g => {
-            glassBase = g.scene;
-            glassBase.position.copy(fullModel.position);
-            glassBase.quaternion.copy(fullModel.quaternion);
-            glassBase.scale.copy(fullModel.scale);
-            scene.add(glassBase);
-          });
+        scene.add(fullModel);
+        gltfLoader.load('/a4landsr8.glb', g => { const sheet = g.scene; const bb = new THREE.Box3().setFromObject(sheet); sheet.position.y -= bb.min.y; const g2 = new THREE.Group(); g2.add(sheet); g2.position.set(0.004, 1.8253 - 2, 0.003); g2.quaternion.copy(fullModel.quaternion); g2.scale.copy(fullModel.scale); scene.add(g2); sheets[5] = g2; loading.style.display = 'none'; resize(); updateCamera(); });
+        const spriteOffset = 0.01;
+        const posList = [ [0.021,1.8253,0.003],[0.021,1.454,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.307,0.003],[-0.02,1.82753,0.003],[-0.02,1.454,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.307,0.003] ];
+        posList.forEach((p, i) => {
+          const baseZ = p[2]; const z = baseZ + spriteOffset;
+          const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: hotspotMap, transparent: true }));
+          sp.position.set(p[0], p[1] - 2, z);
+          sp.scale.set(0.075, 0.075, 1);
+          sp.userData = { id: i, side: p[0] > 0 ? 'right' : 'left', baseZ, textures: { plus: hotspotMap, active: activeHotspotMap, clear: clearMap }};
+          scene.add(sp);
+          sprites.push(sp);
+        });
+      });
+    }
+
+    document.querySelectorAll('.material-option').forEach(el => { el.addEventListener('click', () => { document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el)); const mat = el.dataset.material; if (mat === 'metal') { modelParts.metalbase && (modelParts.metalbase.visible = true); glassBase && scene.remove(glassBase); modelParts.glassbase && (modelParts.glassbase.visible = false); } else { modelParts.metalbase && (modelParts.metalbase.visible = false); if (!glassBase) { gltfLoader.load('/glassbase.glb', g => { glassBase = g.scene; glassBase.position.copy(fullModel.position); glassBase.quaternion.copy(fullModel.quaternion); glassBase.scale.copy(fullModel.scale); scene.add(glassBase); }); } } }); });
+
+    const mapR = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a5vertlf8', a5landscape: 'a5landslf8' };
+    const mapL = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a5vertr8', a5landscape: 'a5landsr8' };
+
+    function pick(x, y) { ray.setFromCamera(new THREE.Vector2(x, y), camera); const hit = ray.intersectObjects(sprites)[0]; return hit ? hit.object : null; }
+
+    renderer.domElement.addEventListener('pointerdown', e => {
+      const rect = canvas.getBoundingClientRect(); mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1; mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const clicked = pick(mouse.x, mouse.y);
+      if (clicked) {
+        if (sheets[clicked.userData.id]) {
+          scene.remove(sheets[clicked.userData.id]); delete sheets[clicked.userData.id]; clicked.material.map = clicked.userData.textures.plus; clicked.material.needsUpdate = true;
+        } else {
+          clicked.material.map = clicked.userData.textures.active; clicked.material.needsUpdate = true; active = clicked;
         }
       }
     });
-  });
 
-  // Sheet handlers
-  const mapR = {
-    a4vertical:   'a4vertlf8',
-    a4landscape:  'a4landslf8',
-    a5vertical:   'a5vertlf8',
-    a5landscape:  'a5landslf8'
-  };
-  const mapL = {
-    a4vertical:   'a4vertr8',
-    a4landscape:  'a4landsr8',
-    a5vertical:   'a5vertr8',
-    a5landscape:  'a5landsr8'
-  };
-  let active = null;
-  const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+    function bindBtns(btns) { btns.forEach(b => b.addEventListener('click', () => { if (!active) return; const fmt = b.dataset.format; const side = active.userData.side; const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb'; const prev = sheets[active.userData.id]; if (prev) scene.remove(prev); gltfLoader.load('/' + file, g => { const s = g.scene; const bb = new THREE.Box3().setFromObject(s); s.position.y -= bb.min.y; const grp = new THREE.Group(); grp.add(s); const p = active.position.clone(); p.z = active.userData.baseZ; p.x += side === 'left' ? 0.025 : -0.025; grp.position.copy(p); grp.quaternion.copy(fullModel.quaternion); grp.scale.copy(fullModel.scale); scene.add(grp); sheets[active.userData.id] = grp; active.material.map = active.userData.textures.clear; active.material.needsUpdate = true; }); })); }
 
-  function pick(x,y) {
-    ray.setFromCamera(new THREE.Vector2(x,y), camera);
-    const hit = ray.intersectObjects(sprites)[0];
-    return hit ? hit.object : null;
-  }
+    bindBtns(document.querySelectorAll('#hotspot-panel button'));
+    bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
 
-  renderer.domElement.addEventListener('pointerdown', e => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = ((e.clientX-rect.left)/rect.width)*2 - 1;
-    mouse.y = -((e.clientY-rect.top)/rect.height)*2 + 1;
-    active = pick(mouse.x, mouse.y);
-  });
+    renderer.domElement.addEventListener('pointermove', e => {
+      const rect = canvas.getBoundingClientRect(); const x = ((e.clientX - rect.left) / rect.width) * 2 - 1; const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const hit = pick(x, y);
+      sprites.forEach(sp => { if (sp.material.map === clearHoverMap && sp !== hit) { sp.material.map = clearMap; sp.material.needsUpdate = true; }});
+      if (hit && hit.material.map === clearMap) { hit.material.map = clearHoverMap; hit.material.needsUpdate = true; }
+      if (hit !== hov) {
+        if (hov) gsap.to(hov.scale, { x: 0.075, y: 0.075, duration: 0.3, ease: 'power2.out' });
+        hov = hit;
+        if (hov) gsap.to(hov.scale, { x: 0.1125, y: 0.1125, duration: 0.3, ease: 'power2.out' });
+      }
+    });
 
-  function bindBtns(btns) {
-    btns.forEach(b => b.addEventListener('click', () => {
-      if (!active) return;
-      const fmt = b.dataset.format, side = active.userData.side;
-      const file = (side==='right' ? mapR[fmt] : mapL[fmt]) + '.glb';
-      const prev = sheets[active.userData.id];
-      if (prev) scene.remove(prev);
-      gltfLoader.load('/'+file, g => {
-        const s = g.scene, bb = new THREE.Box3().setFromObject(s);
-        s.position.y -= bb.min.y;
-        const grp = new THREE.Group(); grp.add(s);
-        const p = active.position.clone();
-        p.x += (side==='left' ? 0.025 : -0.025);
-        grp.position.copy(p);
-        grp.quaternion.copy(fullModel.quaternion);
-        grp.scale.copy(fullModel.scale);
-        scene.add(grp);
-        sheets[active.userData.id] = grp;
-      });
-    }));
-  }
-  bindBtns(document.querySelectorAll('#hotspot-panel button'));
-  bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
-
-  // Hover scale
-  let hov = null;
-  renderer.domElement.addEventListener('pointermove', e => {
-    const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX-rect.left)/rect.width)*2 - 1;
-    const y = -((e.clientY-rect.top)/rect.height)*2 + 1;
-    const hit = pick(x,y);
-    if (hit !== hov) {
-      if (hov) gsap.to(hov.scale, { x:0.075, y:0.075, duration:0.3, ease:'power2.out' });
-      hov = hit;
-      if (hov) gsap.to(hov.scale, { x:0.1125, y:0.1125, duration:0.3, ease:'power2.out' });
-    }
-  });
-
-  // Render loop
-  resize();
-  updateCamera();
-  (function loop() {
-    requestAnimationFrame(loop);
-    renderer.render(scene, camera);
-  })();
+    resize();
+    (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
   </script>
 </body>
 </html>
