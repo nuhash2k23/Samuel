@@ -169,7 +169,7 @@
       gltfLoader.load('/adsholder.glb', gltf => {
         fullModel = gltf.scene;
         fullModel.position.set(0,-2,0);
-        fullModel.scale.y *= 1.072;
+        // fullModel.scale.y *= 1.072;
         fullModel.traverse(o => {
           if (o.name) modelParts[o.name] = o;
           if (o.isMesh) {
