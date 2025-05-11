@@ -168,7 +168,7 @@
       gltfLoader.load('/adsholder.glb', gltf => {
         fullModel = gltf.scene;
         fullModel.position.set(0,-2,0);
-        fullModel.scale.z *= 1.5;
+        fullModel.scale.y *= 1.082;
         fullModel.traverse(o => {
           if (o.name) modelParts[o.name] = o;
           if (o.isMesh) { o.castShadow=o.receiveShadow=true; if(o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy(); }
