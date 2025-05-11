@@ -81,8 +81,8 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { gsap } from 'gsap';
 
-    const canvas = document.getElementById('canvas');
-    const loading = document.querySelector('.loading-overlay');
+    const canvas   = document.getElementById('canvas');
+    const loading  = document.querySelector('.loading-overlay');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.style.touchAction = 'none';
@@ -99,7 +99,7 @@
     }
     window.addEventListener('resize', resize);
 
-    const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
+    const camera  = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
     camera.position.set(0, 1.5, -2.73);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, -1, 0);
@@ -117,17 +117,17 @@
     const fl = new THREE.DirectionalLight(0xffffff, 0.063);
     fl.position.set(-1,4,-3); scene.add(fl);
 
-    let fullModel;
-    let glassBaseMesh = null;
-    const modelParts = {};
-    const sheets = {};
-    const sprites = [];
-    let active = null;
-    let hov = null;
-    const ray = new THREE.Raycaster();
+    let fullModel, glassBaseMesh = null;
+    const modelParts = {}, sheets = {}, sprites = [];
+    let active = null, hov = null;
+
+    // *** NEW: prevent double-tap loads per hotspot ***
+    const loadingSheets = {};
+
+    const ray   = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
+    const draco      = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
     const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
     const rgbeLoader = new RGBELoader();
 
@@ -154,9 +154,9 @@
       return new THREE.CanvasTexture(c);
     }
 
-    const plusTex = makeHotspotTex('#000');
-    const plusHoverTex = makeHotspotTex('#06d6a2');
-    const clearTex = makeClearHotspotTex('#000');
+    const plusTex       = makeHotspotTex('#000');
+    const plusHoverTex  = makeHotspotTex('#06d6a2');
+    const clearTex      = makeClearHotspotTex('#000');
     const clearHoverTex = makeClearHotspotTex('#ff0000');
 
     rgbeLoader.load('docklands_02_1k.hdr', hdr => {
@@ -177,14 +177,14 @@
             if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
           }
         });
-        modelParts.metalbase && (modelParts.metalbase.visible = true);
-        modelParts.glassbase && (modelParts.glassbase.visible = false);
+        modelParts.metalbase  && (modelParts.metalbase.visible  = true);
+        modelParts.glassbase  && (modelParts.glassbase.visible  = false);
         scene.add(fullModel);
 
         // initial sheet
         gltfLoader.load('/a4landsr8.glb', g => {
           const sheet = g.scene;
-          const bb = new THREE.Box3().setFromObject(sheet);
+          const bb    = new THREE.Box3().setFromObject(sheet);
           sheet.position.y -= bb.min.y;
           const grp = new THREE.Group(); grp.add(sheet);
           grp.position.set(0.004,1.8253-2,0.003);
@@ -196,22 +196,21 @@
           resize();
         });
 
-       // create hotspots
+        // create hotspots
         const posList = [
           [0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.3,0.003],
           [-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.3,0.003]
         ];
         posList.forEach((p,i) => {
-          // original thin offset + 0.12 closer
           const hotspotZOffset = 0.01 - 0.04;
           const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: plusTex, transparent: true }));
           sp.position.set(p[0], p[1] - 2, p[2] + hotspotZOffset);
           sp.scale.set(0.075, 0.075, 1);
           sp.userData = {
-            id: i,
-            side: p[0] > 0 ? 'right' : 'left',
-            baseZ: p[2],
-            textures: { plus: plusTex, hover: plusHoverTex, clear: clearTex }
+            id:      i,
+            side:    p[0] > 0 ? 'right' : 'left',
+            baseZ:   p[2],
+            textures:{ plus: plusTex, hover: plusHoverTex, clear: clearTex }
           };
           scene.add(sp);
           sprites.push(sp);
@@ -219,17 +218,14 @@
       });
     }
 
-    // MATERIAL toggle: only one base visible
+    // MATERIAL toggle
     document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
       document.querySelectorAll('.material-option').forEach(b =>
         b.classList.toggle('active', b === el)
       );
       const mat = el.dataset.material;
       if (mat === 'metal') {
-        if (glassBaseMesh) {
-          scene.remove(glassBaseMesh);
-          glassBaseMesh = null;
-        }
+        if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
         modelParts.metalbase && (modelParts.metalbase.visible = true);
         modelParts.glassbase && (modelParts.glassbase.visible = false);
       } else {
@@ -254,7 +250,7 @@
       return hit ? hit.object : null;
     }
 
-    // pointerdown with mobile feedback
+    // mobile pointer feedback & toggle sprite textures
     renderer.domElement.addEventListener('pointerdown', e => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
@@ -262,7 +258,6 @@
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       const hit = pick(x, y);
 
-      // simulate hover on tap
       sprites.forEach(sp => {
         if (sp === hit) {
           if (sp.material.map === sp.userData.textures.plus) sp.material.map = sp.userData.textures.hover;
@@ -298,34 +293,50 @@
       }
     }, { passive: false });
 
+    // *** UPDATED bindBtns with single-tap guard ***
     function bindBtns(btns) {
       btns.forEach(b => b.addEventListener('click', () => {
         if (!active) return;
-        const fmt = b.dataset.format;
+
+        const id = active.userData.id;
+        if (loadingSheets[id]) return;       // already loading, ignore
+
+        loadingSheets[id] = true;            // lock further taps
+        const fmt  = b.dataset.format;
         const side = active.userData.side;
         const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb';
-        if (sheets[active.userData.id]) scene.remove(sheets[active.userData.id]);
 
+        // remove existing sheet immediately
+        if (sheets[id]) {
+          scene.remove(sheets[id]);
+          delete sheets[id];
+        }
+
+        // load new sheet
         gltfLoader.load('/' + file, g => {
-          const s = g.scene;
+          const s  = g.scene;
           const bb = new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
+
           const grp = new THREE.Group();
           grp.add(s);
 
-          // sheet placed at original hotspot baseZ
           const p = active.position.clone();
           p.z = active.userData.baseZ;
-          p.x += side === 'left' ? 0.025 : -0.025;
+          p.x += side === 'left' ?  0.025 : -0.025;
 
           grp.position.copy(p);
           grp.quaternion.copy(fullModel.quaternion);
           grp.scale.copy(fullModel.scale);
+
           scene.add(grp);
-          sheets[active.userData.id] = grp;
+          sheets[id] = grp;
+
+          loadingSheets[id] = false;         // done loading, unlock
         });
       }));
     }
+
     bindBtns(document.querySelectorAll('#hotspot-panel button'));
     bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
 
@@ -334,6 +345,7 @@
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       const hoverHit = pick(x, y);
+
       sprites.forEach(sp => {
         if (sp === hoverHit) {
           if (sp.material.map === sp.userData.textures.plus) {
@@ -354,6 +366,7 @@
           }
         }
       });
+
       if (hoverHit !== hov) {
         if (hov) gsap.to(hov.scale, { x:0.075, y:0.075, duration:0.3, ease:'power2.out' });
         hov = hoverHit;
