@@ -10,32 +10,31 @@
     :root { --primary: #000; --secondary: #fff; --accent: #06d6a2; --gray-light: #f5f5f5; --gray: #e0e0e0; --gray-dark: #888; }
     body { background: var(--secondary); overflow: hidden; }
     .container { display: flex; height: 100vh; }
-    .canvas-container { position: relative; width: 45%; height: 100%; background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%); }
+    .canvas-container { position: relative; width: 45%; height: 100%; background: linear-gradient(to bottom, #000 0%, #1a1a1a 100%); }
     #canvas { width: 100%; height: 100%; display: block; }
-    .loading-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 10; }
-    .spinner { border: 5px solid rgba(255, 255, 255, 0.3); border-top: 5px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    .loading-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 10; }
+    .spinner { border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid var(--accent); border-radius: 50%; width:50px; height:50px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .configurator { width: 55%; padding: 40px; overflow-y: auto; background: var(--secondary); }
-    h1 { font-size: 28px; margin-bottom: 8px; }
-    .subtitle { font-size: 13px; color: var(--gray-dark); margin-bottom: 24px; }
-    p, h2 { font-size: 15px; color: var(--gray-dark); margin-bottom: 24px; }
-    h2 { font-size: 20px; margin-top: 32px; }
+    .configurator { width:55%; padding:40px; overflow-y:auto; background: var(--secondary); }
+    h1 { font-size:28px; margin-bottom:8px; }
+    .subtitle { font-size:13px; color: var(--gray-dark); margin-bottom:24px; }
+    p,h2 { font-size:15px; color: var(--gray-dark); margin-bottom:24px; }
+    h2 { font-size:20px; margin-top:32px; }
     .required { color: var(--accent); }
-    .material-options, .hotspot-panel { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
-    .material-option, .hotspot-panel button { border: 1px solid var(--gray); border-radius: 6px; padding: 12px 18px; background: var(--secondary); cursor: pointer; transition: all .3s; }
-    .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0, 255, 0, 0.05); }
+    .material-options, .hotspot-panel { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px; }
+    .material-option, .hotspot-panel button { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
+    .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
     .material-option:hover, .hotspot-panel button:hover { transform: translateY(-2px); border-color: var(--primary); }
-    .footer { font-size: 12px; color: var(--gray-dark); text-align: center; margin-top: 40px; }
-    .mobile-sheet-buttons { display: none; }
-    @media (max-width: 768px) {
-      body { overflow-y: auto; }
-      .container { flex-direction: column; height: auto; }
-      .canvas-container { width: 100%; height: 80vh; }
-      #canvas { height: 100%; }
-      .configurator { width: 100%; height: 50vh; overflow-y: auto; }
-      .hotspot-panel, .sheet-format-heading, .instructions { display: none; }
-      .mobile-sheet-buttons { display: flex; position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); gap: 12px; z-index: 5; }
-      .mobile-sheet-buttons button { border: 1px solid var(--gray); border-radius: 6px; padding: 8px 12px; background: var(--secondary); backdrop-filter: blur(5px); }
+    .footer { font-size:12px; color: var(--gray-dark); text-align:center; margin-top:40px; }
+    .mobile-sheet-buttons { display:none; }
+    @media (max-width:768px) {
+      body { overflow-y:auto; }
+      .container { flex-direction:column; height:auto; }
+      .canvas-container { width:100%; height:80vh; }
+      .configurator { width:100%; height:50vh; }
+      .hotspot-panel, .sheet-format-heading, .instructions { display:none; }
+      .mobile-sheet-buttons { display:flex; position:absolute; bottom:16px; left:50%; transform:translateX(-50%); gap:12px; z-index:5; }
+      .mobile-sheet-buttons button { border:1px solid var(--gray); border-radius:6px; padding:8px 12px; background:var(--secondary); backdrop-filter: blur(5px); }
     }
   </style>
 </head>
@@ -53,8 +52,8 @@
     </div>
     <div class="configurator">
       <h1>FLOW-FOIL Luminous Freestanding Display Kit</h1>
-      <p class="subtitle">Modular luminous floor display ideal for positioning in travel agencies, trade fair stands, events, real estate agencies, shops, conference rooms, etc.</p>
-      <p class="instructions">Click any hotspot to load your sheet format. Toggle base material below, then choose sheet:</p>
+      <p class="subtitle">Modular luminous floor display ideal for travel agencies, trade fairs, events, real estate agencies, shops, conference rooms.</p>
+      <p class="instructions">Click a hotspot to load your sheet. Toggle base material, then choose sheet.</p>
       <h2>Choose base material<span class="required">*</span></h2>
       <div class="material-options">
         <div class="material-option active" data-material="metal">Metal</div>
@@ -85,12 +84,15 @@
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.domElement.style.touchAction = 'none';
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.48;
 
     function resize() {
-      let w = window.innerWidth > 768 ? window.innerWidth * 0.45 : window.innerWidth;
-      let h = window.innerWidth <= 768 ? window.innerHeight * 0.8 : window.innerHeight;
+      renderer.setPixelRatio(window.devicePixelRatio);
+      const w = window.innerWidth > 768 ? window.innerWidth * 0.45 : window.innerWidth;
+      const h = window.innerWidth <= 768 ? window.innerHeight * 0.8 : window.innerHeight;
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -111,110 +113,109 @@
     const scene = new THREE.Scene();
     scene.add(new THREE.AmbientLight(0xffffff, 0.726));
     const dl = new THREE.DirectionalLight(0xffffff, 0.7318);
-    dl.position.set(2, 3, 7); dl.castShadow = true; scene.add(dl);
+    dl.position.set(2,3,7); dl.castShadow = true; scene.add(dl);
     const fl = new THREE.DirectionalLight(0xffffff, 0.063);
-    fl.position.set(-1, 4, -3); scene.add(fl);
+    fl.position.set(-1,4,-3); scene.add(fl);
 
-    function makeHotspotTex(fill) {
+    function makeHotspotTex(color) {
       const size = 128;
       const c = document.createElement('canvas'); c.width = c.height = size;
-      const ctx = c.getContext('2d'); const r = size / 2;
-      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = size * 0.12;
-      const L = size * 0.6;
-      ctx.beginPath(); ctx.moveTo(r - L / 2, r); ctx.lineTo(r + L / 2, r); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(r, r - L / 2); ctx.lineTo(r, r + L / 2); ctx.stroke();
+      const ctx = c.getContext('2d'); const r = size/2;
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = size*0.12;
+      const L = size*0.6;
+      ctx.beginPath(); ctx.moveTo(r-L/2,r); ctx.lineTo(r+L/2,r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r,r-L/2); ctx.lineTo(r,r+L/2); ctx.stroke();
+      return new THREE.CanvasTexture(c);
+    }
+    function makeClearHotspotTex(color) {
+      const size = 128;
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      const ctx = c.getContext('2d'); const r = size/2;
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = size*0.12;
+      const L = size*0.6;
+      ctx.beginPath(); ctx.moveTo(r-L/2,r-L/2); ctx.lineTo(r+L/2,r+L/2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r+L/2,r-L/2); ctx.lineTo(r-L/2,r+L/2); ctx.stroke();
       return new THREE.CanvasTexture(c);
     }
 
-    function makeClearHotspotTex(fill) {
-      const size = 128;
-      const c = document.createElement('canvas'); c.width = c.height = size;
-      const ctx = c.getContext('2d'); const r = size / 2;
-      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = size * 0.12;
-      const L = size * 0.6;
-      ctx.beginPath(); ctx.moveTo(r - L / 2, r - L / 2); ctx.lineTo(r + L / 2, r + L / 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(r + L / 2, r - L / 2); ctx.lineTo(r - L / 2, r + L / 2); ctx.stroke();
-      return new THREE.CanvasTexture(c);
-    }
-
-    const hotspotMap = makeHotspotTex('#000');
-    const activeHotspotMap = makeHotspotTex('#06d6a2');
-    const clearMap = makeClearHotspotTex('#000');
-    const clearHoverMap = makeClearHotspotTex('#ff0000');
+    const plusTex = makeHotspotTex('#000');
+    const plusHoverTex = makeHotspotTex('#06d6a2');
+    const clearTex = makeClearHotspotTex('#000');
+    const clearHoverTex = makeClearHotspotTex('#ff0000');
 
     const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
     const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
     const rgbeLoader = new RGBELoader();
 
-    let fullModel; const modelParts = {}; const sheets = {}; const sprites = [];
-    let glassBase = null; let active = null; let hov = null;
-    const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+    let fullModel;
+    const modelParts = {};
+    const sheets = {};
+    const sprites = [];
+    let active = null;
+    let hov = null;
+    const ray = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
-    rgbeLoader.load('docklands_02_1k.hdr', hdr => { hdr.mapping = THREE.EquirectangularReflectionMapping; scene.environment = hdr; loadHolder(); }, undefined, loadHolder);
+    rgbeLoader.load('docklands_02_1k.hdr', hdr => {
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      scene.environment = hdr;
+      loadHolder();
+    });
 
     function loadHolder() {
       gltfLoader.load('/adsholder.glb', gltf => {
-        fullModel = gltf.scene; fullModel.position.set(0, -2, 0);
-        fullModel.traverse(o => { if (o.name) modelParts[o.name] = o; if (o.isMesh) { o.castShadow = o.receiveShadow = true; if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy(); }});
-        modelParts.metalbase && (modelParts.metalbase.visible = true);
-        modelParts.glassbase && (modelParts.glassbase.visible = false);
+        fullModel = gltf.scene;
+        fullModel.position.set(0,-2,0);
+        fullModel.scale.z *= 1.5;
+        fullModel.traverse(o => {
+          if (o.name) modelParts[o.name] = o;
+          if (o.isMesh) { o.castShadow=o.receiveShadow=true; if(o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy(); }
+        });
+        modelParts.metalbase && (modelParts.metalbase.visible=true);
+        modelParts.glassbase && (modelParts.glassbase.visible=false);
         scene.add(fullModel);
-        gltfLoader.load('/a4landsr8.glb', g => { const sheet = g.scene; const bb = new THREE.Box3().setFromObject(sheet); sheet.position.y -= bb.min.y; const g2 = new THREE.Group(); g2.add(sheet); g2.position.set(0.004, 1.8253 - 2, 0.003); g2.quaternion.copy(fullModel.quaternion); g2.scale.copy(fullModel.scale); scene.add(g2); sheets[5] = g2; loading.style.display = 'none'; resize(); updateCamera(); });
-        const spriteOffset = 0.01;
-        fullModel.scale.y *= 1.05;
-        const posList = [ [0.021,1.8253,0.003],[0.021,1.454,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.307,0.003],[-0.02,1.82753,0.003],[-0.02,1.454,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.307,0.003] ];
-        posList.forEach((p, i) => {
-          const baseZ = p[2]; const z = baseZ + spriteOffset;
-          const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: hotspotMap, transparent: true }));
-          sp.position.set(p[0], p[1] - 2, z);
-          sp.scale.set(0.075, 0.075, 1);
-          sp.userData = { id: i, side: p[0] > 0 ? 'right' : 'left', baseZ, textures: { plus: hotspotMap, active: activeHotspotMap, clear: clearMap }};
-          scene.add(sp);
-          sprites.push(sp);
+        gltfLoader.load('/a4landsr8.glb', g => {
+          const sheet = g.scene;
+          const bb = new THREE.Box3().setFromObject(sheet);
+          sheet.position.y -= bb.min.y;
+          const grp = new THREE.Group(); grp.add(sheet);
+          grp.position.set(0.004,1.8253-2,0.003);
+          grp.quaternion.copy(fullModel.quaternion);
+          grp.scale.copy(fullModel.scale);
+          scene.add(grp);
+          sheets[5] = grp;
+          loading.style.display='none'; resize();
+        });
+        const posList=[[0.021,1.8253,0.003],[0.021,1.474,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.365,0.003],[-0.02,1.82753,0.003],[-0.02,1.474,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.365,0.003]];
+        posList.forEach((p,i)=>{
+          const zOff=0.01;
+          const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:plusTex,transparent:true}));
+          sp.position.set(p[0],p[1]-2,p[2]+zOff);
+          sp.scale.set(0.075,0.075,1);
+          sp.userData={id:i,side:p[0]>0?'right':'left',baseZ:p[2],textures:{plus:plusTex,hover:plusHoverTex,clear:clearTex}};
+          scene.add(sp); sprites.push(sp);
         });
       });
     }
 
-    document.querySelectorAll('.material-option').forEach(el => { el.addEventListener('click', () => { document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el)); const mat = el.dataset.material; if (mat === 'metal') { modelParts.metalbase && (modelParts.metalbase.visible = true); glassBase && scene.remove(glassBase); modelParts.glassbase && (modelParts.glassbase.visible = false); } else { modelParts.metalbase && (modelParts.metalbase.visible = false); if (!glassBase) { gltfLoader.load('/glassbase.glb', g => { glassBase = g.scene; glassBase.position.copy(fullModel.position); glassBase.quaternion.copy(fullModel.quaternion); glassBase.scale.copy(fullModel.scale); scene.add(glassBase); }); } } }); });
+    document.querySelectorAll('.material-option').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('.material-option').forEach(b=>b.classList.toggle('active',b===el));const mat=el.dataset.material;if(mat==='metal'){modelParts.metalbase&&(modelParts.metalbase.visible=true);modelParts.glassbase&&(modelParts.glassbase.visible=false);}else{modelParts.metalbase&&(modelParts.metalbase.visible=false);gltfLoader.load('/glassbase.glb',g=>{const gb=g.scene;gb.position.copy(fullModel.position);gb.quaternion.copy(fullModel.quaternion);gb.scale.copy(fullModel.scale);scene.add(gb);});}}));
 
-    const mapR = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a5vertlf8', a5landscape: 'a5landslf8' };
-    const mapL = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a5vertr8', a5landscape: 'a5landsr8' };
+    const mapR={a4vertical:'a4vertlf8',a4landscape:'a4landslf8',a5vertical:'a5vertlf8',a5landscape:'a5landslf8'};
+    const mapL={a4vertical:'a4vertr8',a4landscape:'a4landsr8',a5vertical:'a5vertr8',a5landscape:'a5landsr8'};
 
-    function pick(x, y) { ray.setFromCamera(new THREE.Vector2(x, y), camera); const hit = ray.intersectObjects(sprites)[0]; return hit ? hit.object : null; }
+    function pick(x,y){ray.setFromCamera(new THREE.Vector2(x,y),camera);const hit=ray.intersectObjects(sprites)[0];return hit?hit.object:null;}
 
-    renderer.domElement.addEventListener('pointerdown', e => {
-      const rect = canvas.getBoundingClientRect(); mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1; mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const clicked = pick(mouse.x, mouse.y);
-      if (clicked) {
-        if (sheets[clicked.userData.id]) {
-          scene.remove(sheets[clicked.userData.id]); delete sheets[clicked.userData.id]; clicked.material.map = clicked.userData.textures.plus; clicked.material.needsUpdate = true;
-        } else {
-          clicked.material.map = clicked.userData.textures.active; clicked.material.needsUpdate = true; active = clicked;
-        }
-      }
-    });
+    renderer.domElement.addEventListener('pointerdown',e=>{e.preventDefault();const rect=canvas.getBoundingClientRect();mouse.x=((e.clientX-rect.left)/rect.width)*2-1;mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;const sp=pick(mouse.x,mouse.y);if(sp){if(sheets[sp.userData.id]){scene.remove(sheets[sp.userData.id]);delete sheets[sp.userData.id];sp.material.map=sp.userData.textures.plus;sp.material.needsUpdate=true;active=sp;}else if(active===sp){sp.material.map=sp.userData.textures.plus;sp.material.needsUpdate=true;active=null;}else{sp.material.map=sp.userData.textures.clear;sp.material.needsUpdate=true;active=sp;}}},{passive:false});
 
-    function bindBtns(btns) { btns.forEach(b => b.addEventListener('click', () => { if (!active) return; const fmt = b.dataset.format; const side = active.userData.side; const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb'; const prev = sheets[active.userData.id]; if (prev) scene.remove(prev); gltfLoader.load('/' + file, g => { const s = g.scene; const bb = new THREE.Box3().setFromObject(s); s.position.y -= bb.min.y; const grp = new THREE.Group(); grp.add(s); const p = active.position.clone(); p.z = active.userData.baseZ; p.x += side === 'left' ? 0.025 : -0.025; grp.position.copy(p); grp.quaternion.copy(fullModel.quaternion); grp.scale.copy(fullModel.scale); scene.add(grp); sheets[active.userData.id] = grp; active.material.map = active.userData.textures.clear; active.material.needsUpdate = true; }); })); }
-
+    function bindBtns(btns){btns.forEach(b=>b.addEventListener('click',()=>{if(!active)return;const fmt=b.dataset.format;const side=active.userData.side;const file=(side==='right'?mapR[fmt]:mapL[fmt])+'.glb';const prev=sheets[active.userData.id];if(prev)scene.remove(prev);gltfLoader.load('/'+file,g=>{const s=g.scene,bb=new THREE.Box3().setFromObject(s);s.position.y-=bb.min.y;const grp=new THREE.Group();grp.add(s);const p=active.position.clone();p.z=active.userData.baseZ;p.x+=side==='left'?0.025:-0.025;grp.position.copy(p);grp.quaternion.copy(fullModel.quaternion);grp.scale.copy(fullModel.scale);scene.add(grp);sheets[active.userData.id]=grp;});}));}
     bindBtns(document.querySelectorAll('#hotspot-panel button'));
     bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
 
-    renderer.domElement.addEventListener('pointermove', e => {
-      const rect = canvas.getBoundingClientRect(); const x = ((e.clientX - rect.left) / rect.width) * 2 - 1; const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hit = pick(x, y);
-      sprites.forEach(sp => { if (sp.material.map === clearHoverMap && sp !== hit) { sp.material.map = clearMap; sp.material.needsUpdate = true; }});
-      if (hit && hit.material.map === clearMap) { hit.material.map = clearHoverMap; hit.material.needsUpdate = true; }
-      if (hit !== hov) {
-        if (hov) gsap.to(hov.scale, { x: 0.075, y: 0.075, duration: 0.3, ease: 'power2.out' });
-        hov = hit;
-        if (hov) gsap.to(hov.scale, { x: 0.1125, y: 0.1125, duration: 0.3, ease: 'power2.out' });
-      }
-    });
+    renderer.domElement.addEventListener('pointermove',e=>{const rect=canvas.getBoundingClientRect();const x=((e.clientX-rect.left)/rect.width)*2-1;const y=-((e.clientY-rect.top)/rect.height)*2+1;const hit=pick(x,y);sprites.forEach(sp=>{if(sp===hit){if(sp.material.map===sp.userData.textures.plus){sp.material.map=sp.userData.textures.hover;sp.material.needsUpdate=true;}else if(sp.material.map===clearTex){sp.material.map=clearHoverTex;sp.material.needsUpdate=true;}}else{if(sp.material.map===sp.userData.textures.hover){sp.material.map=sp.userData.textures.plus;sp.material.needsUpdate=true;}if(sp.material.map===clearHoverTex){sp.material.map=clearTex;sp.material.needsUpdate=true;}}});if(hit!==hov){if(hov)gsap.to(hov.scale,{x:0.075,y:0.075,duration:0.3,ease:'power2.out'});hov=hit;if(hov)gsap.to(hov.scale,{x:0.1125,y:0.1125,duration:0.3,ease:'power2.out'});} });
 
-    resize();
-    (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+    resize();(function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera);}());
   </script>
 </body>
 </html>
