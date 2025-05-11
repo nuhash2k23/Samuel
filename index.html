@@ -169,7 +169,7 @@
       gltfLoader.load('/adsholder.glb', gltf => {
         fullModel = gltf.scene;
         fullModel.position.set(0,-2,0);
-        fullModel.scale.y *= 1.082;
+        fullModel.scale.y *= 1.072;
         fullModel.traverse(o => {
           if (o.name) modelParts[o.name] = o;
           if (o.isMesh) {
@@ -225,6 +225,7 @@
       );
       const mat = el.dataset.material;
       if (mat === 'metal') {
+        // remove any loaded glass mesh
         if (glassBaseMesh) {
           scene.remove(glassBaseMesh);
           glassBaseMesh = null;
@@ -232,8 +233,11 @@
         modelParts.metalbase && (modelParts.metalbase.visible = true);
         modelParts.glassbase && (modelParts.glassbase.visible = false);
       } else {
+        // hide metal
         modelParts.metalbase && (modelParts.metalbase.visible = false);
+        // remove old glass if exists
         if (glassBaseMesh) scene.remove(glassBaseMesh);
+        // load and add glass base
         gltfLoader.load('/glassbase.glb', g => {
           glassBaseMesh = g.scene;
           glassBaseMesh.position.copy(fullModel.position);
@@ -247,57 +251,33 @@
     const mapR = { a4vertical:'a4vertlf8', a4landscape:'a4landslf8', a5vertical:'a5vertlf8', a5landscape:'a5landslf8' };
     const mapL = { a4vertical:'a4vertr8', a4landscape:'a4landsr8', a5vertical:'a5vertr8', a5landscape:'a5landsr8' };
 
-    function pick(x,y) {
+    function pick(x,y){
       ray.setFromCamera(new THREE.Vector2(x,y), camera);
       const hit = ray.intersectObjects(sprites)[0];
       return hit ? hit.object : null;
     }
 
-    // -------- updated pointerdown for mobile feedback --------
     renderer.domElement.addEventListener('pointerdown', e => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hit = pick(x, y);
-
-      // simulate hover feedback on tap
-      sprites.forEach(sp => {
-        if (sp === hit) {
-          if (sp.material.map === sp.userData.textures.plus) {
-            sp.material.map = sp.userData.textures.hover;
-          } else if (sp.material.map === clearTex) {
-            sp.material.map = clearHoverTex;
-          }
-          sp.material.needsUpdate = true;
-        } else {
-          if (sp.material.map === sp.userData.textures.hover) {
-            sp.material.map = sp.userData.textures.plus;
-            sp.material.needsUpdate = true;
-          }
-          if (sp.material.map === clearHoverTex) {
-            sp.material.map = clearTex;
-            sp.material.needsUpdate = true;
-          }
-        }
-      });
-
-      // selection logic
-      if (!hit) return;
-      if (sheets[hit.userData.id]) {
-        scene.remove(sheets[hit.userData.id]);
-        delete sheets[hit.userData.id];
-        hit.material.map = hit.userData.textures.plus;
-        hit.material.needsUpdate = true;
-        active = hit;
-      } else if (active === hit) {
-        hit.material.map = hit.userData.textures.plus;
-        hit.material.needsUpdate = true;
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const sp = pick(mouse.x, mouse.y);
+      if (!sp) return;
+      if (sheets[sp.userData.id]) {
+        scene.remove(sheets[sp.userData.id]);
+        delete sheets[sp.userData.id];
+        sp.material.map = sp.userData.textures.plus;
+        sp.material.needsUpdate = true;
+        active = sp;
+      } else if (active === sp) {
+        sp.material.map = sp.userData.textures.plus;
+        sp.material.needsUpdate = true;
         active = null;
       } else {
-        hit.material.map = hit.userData.textures.clear;
-        hit.material.needsUpdate = true;
-        active = hit;
+        sp.material.map = sp.userData.textures.clear;
+        sp.material.needsUpdate = true;
+        active = sp;
       }
     }, { passive: false });
 
@@ -334,9 +314,9 @@
       const rect = canvas.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hoverHit = pick(x, y);
+      const hit = pick(x, y);
       sprites.forEach(sp => {
-        if (sp === hoverHit) {
+        if (sp === hit) {
           if (sp.material.map === sp.userData.textures.plus) {
             sp.material.map = sp.userData.textures.hover;
             sp.material.needsUpdate = true;
@@ -355,9 +335,9 @@
           }
         }
       });
-      if (hoverHit !== hov) {
+      if (hit !== hov) {
         if (hov) gsap.to(hov.scale, { x:0.075, y:0.075, duration:0.3, ease:'power2.out' });
-        hov = hoverHit;
+        hov = hit;
         if (hov) gsap.to(hov.scale, { x:0.1125, y:0.1125, duration:0.3, ease:'power2.out' });
       }
     });
