@@ -163,6 +163,7 @@
         scene.add(fullModel);
         gltfLoader.load('/a4landsr8.glb', g => { const sheet = g.scene; const bb = new THREE.Box3().setFromObject(sheet); sheet.position.y -= bb.min.y; const g2 = new THREE.Group(); g2.add(sheet); g2.position.set(0.004, 1.8253 - 2, 0.003); g2.quaternion.copy(fullModel.quaternion); g2.scale.copy(fullModel.scale); scene.add(g2); sheets[5] = g2; loading.style.display = 'none'; resize(); updateCamera(); });
         const spriteOffset = 0.01;
+        fullModel.scale.y *= 1.05;
         const posList = [ [0.021,1.8253,0.003],[0.021,1.454,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.307,0.003],[-0.02,1.82753,0.003],[-0.02,1.454,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.307,0.003] ];
         posList.forEach((p, i) => {
           const baseZ = p[2]; const z = baseZ + spriteOffset;
