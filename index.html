@@ -297,7 +297,7 @@
       updatePrice();
     }));
 
-    const mapR={ a4vertical:'a4vertlf8', a4landscape:'a4landsr8', a5vertical:'a3vertlf8', a5landscape:'a3landslf8', a3vertical:'a5vertlf8', a3landscape:'a5landsr8' };
+    const mapR={ a4vertical:'a4vertlf8', a4landscape:'a4landslf8', a5vertical:'a3vertlf8', a5landscape:'a3landslf8', a3vertical:'a5vertlf8', a3landscape:'a5landslf8' };
     const mapL={ a4vertical:'a4vertr8', a4landscape:'a4landsr8', a5vertical:'a3vertr8', a5landscape:'a3landsr8', a3vertical:'a5vertr8', a3landscape:'a5landsr8' };
 
     function pick(x,y){ ray.setFromCamera(new THREE.Vector2(x,y),camera); const h=ray.intersectObjects(sprites)[0]; return h? h.object : null; }
