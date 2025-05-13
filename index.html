@@ -93,6 +93,8 @@
     const isMobile = window.innerWidth <= 768;
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
+const startZ = isMobile ? -2 : -2.73;
+const startY = isMobile ? -1.582 :1.5;
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(isMobile ? 1.5 : window.devicePixelRatio);
@@ -101,7 +103,7 @@
     renderer.domElement.style.touchAction = 'none';
 
     const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
-    camera.position.set(0, 1.5, -2.73);
+camera.position.set(0, startY, startZ);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, -1, 0);
