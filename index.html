@@ -25,6 +25,11 @@
     .material-option, .hotspot-panel button { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
     .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
     .material-option:hover, .hotspot-panel button:hover { transform: translateY(-2px); border-color: var(--primary); }
+    /* Power button styling */
+    .power-control { margin-bottom:32px; }
+    #power-toggle { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
+    #power-toggle.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
+    #power-toggle:hover { transform: translateY(-2px); border-color: var(--primary); }
     .footer { font-size:12px; color: var(--gray-dark); text-align:center; margin-top:40px; }
 
     .mobile-sheet-buttons { display: none; }
@@ -39,15 +44,13 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
-       
       }
       .mobile-sheet-buttons button {
-        /* border: 1px solid var(--gray); */
         border-radius: 6px;
         padding: 8px 12px;
         background: black;
         backdrop-filter: blur(5px);
-margin-top: 25px;
+        margin-top: 25px;
         transform-origin: center;
         cursor: pointer;
         color: white;
@@ -66,7 +69,25 @@ margin-top: 25px;
     <div class="configurator">
       <h1>FLOW-FOIL Luminous Freestanding Display Kit</h1>
 
-      <!-- moved mobile buttons here -->
+      <h2>Choose base material<span class="required">*</span></h2>
+      <div class="material-options">
+        <div class="material-option active" data-material="metal">Metal</div>
+        <div class="material-option" data-material="glass">Glass</div>
+      </div>
+      <div class="power-control">
+        <button id="power-toggle">Power On</button>
+      </div>
+
+      <h2 class="sheet-format-heading">Select sheet format<span class="required">*</span></h2>
+      <div id="hotspot-panel" class="hotspot-panel">
+        <button data-format="a4vertical">A4 Vertical</button>
+        <button data-format="a4landscape">A4 Landscape</button>
+        <button data-format="a5vertical">A5 Vertical</button>
+        <button data-format="a5landscape">A5 Landscape</button>
+        <button data-format="a3vertical">A3 Vertical</button>
+        <button data-format="a3landscape">A3 Landscape</button>
+      </div>
+
       <div id="mobile-sheet-buttons" class="mobile-sheet-buttons">
         <button data-format="a4vertical">A4 Vert.</button>
         <button data-format="a4landscape">A4 Lndscp</button>
@@ -79,20 +100,6 @@ margin-top: 25px;
       <h2>Price: <span id="price">117€</span></h2>
       <p class="subtitle">Modular luminous floor display ideal for travel agencies, trade fairs, events, real estate agencies, shops, conference rooms.</p>
       <p class="instructions">Click a hotspot to load your sheet. Toggle base material, then choose sheet.</p>
-      <h2>Choose base material<span class="required">*</span></h2>
-      <div class="material-options">
-        <div class="material-option active" data-material="metal">Metal</div>
-        <div class="material-option" data-material="glass">Glass</div>
-      </div>
-      <h2 class="sheet-format-heading">Select sheet format<span class="required">*</span></h2>
-      <div id="hotspot-panel" class="hotspot-panel">
-        <button data-format="a4vertical">A4 Vertical</button>
-        <button data-format="a4landscape">A4 Landscape</button>
-        <button data-format="a5vertical">A5 Vertical</button>
-        <button data-format="a5landscape">A5 Landscape</button>
-        <button data-format="a3vertical">A3 Vertical</button>
-        <button data-format="a3landscape">A3 Landscape</button>
-      </div>
       <div class="footer">© 2024 FLOW-FOIL Display Solutions. All rights reserved.</div>
     </div>
 
@@ -131,6 +138,32 @@ margin-top: 25px;
       document.getElementById('price').textContent = p + '€';
     }
     // ---------------
+
+    let powerOn = false;
+    function updateEmission(){
+      Object.values(sheets).forEach(grp => {
+        grp.traverse(o => {
+          if(o.isMesh){
+            if(powerOn){
+              o.material.emissive = new THREE.Color(0xffffff);
+              o.material.emissiveIntensity = .75;
+              o.material.emissiveMap = o.material.map;
+            } else {
+              o.material.emissiveIntensity = 0;
+            }
+            o.material.needsUpdate = true;
+          }
+        });
+      });
+    }
+
+    const powerBtn = document.getElementById('power-toggle');
+    powerBtn.addEventListener('click', () => {
+      powerOn = !powerOn;
+      powerBtn.textContent = powerOn ? 'Power Off' : 'Power On';
+      powerBtn.classList.toggle('active', powerOn);
+      updateEmission();
+    });
 
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
@@ -215,18 +248,11 @@ margin-top: 25px;
       gltfLoader.load('/adsholder.glb', gltf=>{
         fullModel=gltf.scene;
         fullModel.position.set(0,-2,0);
-        fullModel.traverse(o=>{
-          if(o.name) modelParts[o.name]=o;
-          if(o.isMesh){
-            o.castShadow=o.receiveShadow=true;
-            if(o.material.map) o.material.map.anisotropy=renderer.capabilities.getMaxAnisotropy();
-          }
-        });
+        fullModel.traverse(o=>{ if(o.name) modelParts[o.name]=o; if(o.isMesh){ o.castShadow=o.receiveShadow=true; if(o.material.map) o.material.map.anisotropy=renderer.capabilities.getMaxAnisotropy(); } });
         modelParts.metalbase&&(modelParts.metalbase.visible=true);
         modelParts.glassbase&&(modelParts.glassbase.visible=false);
         scene.add(fullModel);
 
-        // initial A4 landscape
         gltfLoader.load('/a4landsr8.glb', g=>{
           const s=g.scene, bb=new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
@@ -240,14 +266,10 @@ margin-top: 25px;
           loading.style.display='none';
           resize();
           updatePrice();
+          updateEmission();
         });
 
-        const posList=[
-          [0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],
-          [0.021,0.688,0.003],[0.021,0.3,0.003],
-          [-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],
-          [-0.02,0.688,0.003],[-0.02,0.3,0.003]
-        ];
+        const posList=[[0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.3,0.003],[-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.3,0.003]];
         posList.forEach((p,i)=>{
           const zOff=0.01-0.04;
           const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:plusTex, transparent:true }));
@@ -260,44 +282,30 @@ margin-top: 25px;
       });
     }
 
-    // material buttons
-    document.querySelectorAll('.material-option').forEach(el=>
-      el.addEventListener('click',()=>{
-        document.querySelectorAll('.material-option').forEach(b=>b.classList.toggle('active', b===el));
-        const m=el.dataset.material;
-        if(m==='metal'){
-          if(glassBaseMesh){ scene.remove(glassBaseMesh); glassBaseMesh=null; }
-          modelParts.metalbase&&(modelParts.metalbase.visible=true);
-          modelParts.glassbase&&(modelParts.glassbase.visible=false);
-        } else {
-          modelParts.metalbase&&(modelParts.metalbase.visible=false);
-          if(glassBaseMesh) scene.remove(glassBaseMesh);
-          gltfLoader.load('/glassbase.glb',g=>{
-            glassBaseMesh=g.scene;
-            ['position','quaternion','scale'].forEach(k=>glassBaseMesh[k].copy(fullModel[k]));
-            scene.add(glassBaseMesh);
-          });
-        }
-        updatePrice();
-      })
-    );
+    document.querySelectorAll('.material-option').forEach(el=>el.addEventListener('click',()=>{
+      document.querySelectorAll('.material-option').forEach(b=>b.classList.toggle('active', b===el));
+      const m=el.dataset.material;
+      if(m==='metal'){
+        if(glassBaseMesh){ scene.remove(glassBaseMesh); glassBaseMesh=null; }
+        modelParts.metalbase&&(modelParts.metalbase.visible=true);
+        modelParts.glassbase&&(modelParts.glassbase.visible=false);
+      } else {
+        modelParts.metalbase&&(modelParts.metalbase.visible=false);
+        if(glassBaseMesh) scene.remove(glassBaseMesh);
+        gltfLoader.load('/glassbase.glb',g=>{ glassBaseMesh=g.scene; ['position','quaternion','scale'].forEach(k=>glassBaseMesh[k].copy(fullModel[k])); scene.add(glassBaseMesh); });
+      }
+      updatePrice();
+    }));
 
-    const mapR={ a4vertical:'a4vertlf8', a4landscape:'a4landslf8', a5vertical:'a3vertlf8', a5landscape:'a3landslf8', a3vertical:'a5vertlf8', a3landscape:'a5landslf8' };
+    const mapR={ a4vertical:'a4vertlf8', a4landscape:'a4landsr8', a5vertical:'a3vertlf8', a5landscape:'a3landslf8', a3vertical:'a5vertlf8', a3landscape:'a5landsr8' };
     const mapL={ a4vertical:'a4vertr8', a4landscape:'a4landsr8', a5vertical:'a3vertr8', a5landscape:'a3landsr8', a3vertical:'a5vertr8', a3landscape:'a5landsr8' };
 
-    function pick(x,y){
-      ray.setFromCamera(new THREE.Vector2(x,y),camera);
-      const h=ray.intersectObjects(sprites)[0];
-      return h? h.object : null;
-    }
+    function pick(x,y){ ray.setFromCamera(new THREE.Vector2(x,y),camera); const h=ray.intersectObjects(sprites)[0]; return h? h.object : null; }
 
     renderer.domElement.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      const rect=canvas.getBoundingClientRect(),
-            x=((e.clientX-rect.left)/rect.width)*2-1,
-            y=-((e.clientY-rect.top)/rect.height)*2+1;
+      const rect=canvas.getBoundingClientRect(), x=((e.clientX-rect.left)/rect.width)*2-1, y=-((e.clientY-rect.top)/rect.height)*2+1;
       const hit=pick(x,y);
-
       sprites.forEach(sp=>{
         if(sp===hit){
           if(sp.material.map===sp.userData.textures.plus) sp.material.map=sp.userData.textures.hover;
@@ -308,22 +316,17 @@ margin-top: 25px;
           if(sp.material.map===clearHoverTex){ sp.material.map=clearTex; sp.material.needsUpdate=true; }
         }
       });
-
       if(!hit) return;
       const id=hit.userData.id;
       if(sheets[id]){
-        scene.remove(sheets[id]);
-        delete sheets[id];
-        delete sheetFormats[id];
+        scene.remove(sheets[id]); delete sheets[id]; delete sheetFormats[id];
         hit.material.map=plusTex; hit.material.needsUpdate=true;
         active=hit;
-        updatePrice();
+        updatePrice(); updateEmission();
       } else if(active===hit){
-        hit.material.map=plusTex; hit.material.needsUpdate=true;
-        active=null;
+        hit.material.map=plusTex; hit.material.needsUpdate=true; active=null;
       } else {
-        hit.material.map=clearTex; hit.material.needsUpdate=true;
-        active=hit;
+        hit.material.map=clearTex; hit.material.needsUpdate=true; active=hit;
       }
     },{ passive:false });
 
@@ -336,13 +339,11 @@ margin-top: 25px;
         const fmt=b.dataset.format, side=active.userData.side;
         const file=(side==='right'?mapR[fmt]:mapL[fmt])+'.glb';
         if(sheets[id]){ scene.remove(sheets[id]); delete sheets[id]; delete sheetFormats[id]; }
-
         gltfLoader.load('/'+file, g=>{
           const s=g.scene, bb=new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
           const grp=new THREE.Group(); grp.add(s);
-          const p=active.position.clone();
-          p.z=active.userData.baseZ;
+          const p=active.position.clone(); p.z=active.userData.baseZ;
           p.x += side==='left'?0.025:-0.025;
           grp.position.copy(p);
           grp.quaternion.copy(fullModel.quaternion);
@@ -351,7 +352,7 @@ margin-top: 25px;
           sheets[id]=grp;
           sheetFormats[id]=fmt;
           loadingSheets[id]=false;
-          updatePrice();
+          updatePrice(); updateEmission();
         });
       }));
     }
@@ -359,11 +360,8 @@ margin-top: 25px;
     bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
 
     renderer.domElement.addEventListener('pointermove',e=>{
-      const rect=canvas.getBoundingClientRect(),
-            x=((e.clientX-rect.left)/rect.width)*2-1,
-            y=-((e.clientY-rect.top)/rect.height)*2+1;
+      const rect=canvas.getBoundingClientRect(), x=((e.clientX-rect.left)/rect.width)*2-1, y=-((e.clientY-rect.top)/rect.height)*2+1;
       const hoverHit=pick(x,y);
-
       sprites.forEach(sp=>{
         if(sp===hoverHit){
           if(sp.material.map===plusTex) sp.material.map=plusHoverTex;
@@ -374,20 +372,11 @@ margin-top: 25px;
           if(sp.material.map===clearHoverTex){ sp.material.map=clearTex; sp.material.needsUpdate=true; }
         }
       });
-
-      if(hoverHit!==hov){
-        if(hov) gsap.to(hov.scale,{x:0.075,y:0.075,duration:0.3,ease:'power2.out'});
-        hov=hoverHit;
-        if(hov) gsap.to(hov.scale,{x:0.1125,y:0.1125,duration:0.3,ease:'power2.out'});
-      }
+      if(hoverHit!==hov){ if(hov) gsap.to(hov.scale,{x:0.075,y:0.075,duration:0.3,ease:'power2.out'}); hov=hoverHit; if(hov) gsap.to(hov.scale,{x:0.1125,y:0.1125,duration:0.3,ease:'power2.out'}); }
     });
 
     resize();
-    (function loop(){
-      requestAnimationFrame(loop);
-      controls.update();
-      renderer.render(scene,camera);
-    })();
+    (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
   </script>
 </body>
 </html>
