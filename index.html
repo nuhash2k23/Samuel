@@ -26,35 +26,56 @@
     .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
     .material-option:hover, .hotspot-panel button:hover { transform: translateY(-2px); border-color: var(--primary); }
     .footer { font-size:12px; color: var(--gray-dark); text-align:center; margin-top:40px; }
-    .mobile-sheet-buttons { display:none; }
+
+    .mobile-sheet-buttons { display: none; }
     @media (max-width:768px) {
       body { overflow-y:auto; }
       .container { flex-direction:column; height:auto; }
       .canvas-container { width:100%; height:80vh; }
-      .configurator { width:100%; height:50vh; }
+      .configurator { width:100%; height:80vh; }
       .hotspot-panel, .sheet-format-heading, .instructions { display:none; }
-      .mobile-sheet-buttons { display:flex; position:absolute; bottom:16px; left:50%; transform:translateX(-50%); gap:12px; z-index:5; }
-      .mobile-sheet-buttons button { border:1px solid var(--gray); border-radius:6px; padding:8px 12px; background:var(--secondary); backdrop-filter: blur(5px); }
+
+      .mobile-sheet-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+       
+      }
+      .mobile-sheet-buttons button {
+        /* border: 1px solid var(--gray); */
+        border-radius: 6px;
+        padding: 8px 12px;
+        background: black;
+        backdrop-filter: blur(5px);
+margin-top: 25px;
+        transform-origin: center;
+        cursor: pointer;
+        color: white;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+
     <div class="canvas-container">
       <div class="loading-overlay"><div class="spinner"></div></div>
       <canvas id="canvas"></canvas>
-      <div id="mobile-sheet-buttons" class="mobile-sheet-buttons">
-        <button data-format="a4vertical">A4 Vertical</button>
-        <button data-format="a4landscape">A4 Landscape</button>
-        <button data-format="a5vertical">A5 Vertical</button>
-        <button data-format="a5landscape">A5 Landscape</button>
-        <button data-format="a3vertical">A3 Vertical</button>
-        <button data-format="a3landscape">A3 Landscape</button>
-      </div>
     </div>
+
     <div class="configurator">
       <h1>FLOW-FOIL Luminous Freestanding Display Kit</h1>
-      <!-- Dynamic price display -->
+
+      <!-- moved mobile buttons here -->
+      <div id="mobile-sheet-buttons" class="mobile-sheet-buttons">
+        <button data-format="a4vertical">A4 Vert.</button>
+        <button data-format="a4landscape">A4 Lndscp</button>
+        <button data-format="a5vertical">A5 Vert.</button>
+        <button data-format="a5landscape">A5 Lndscp</button>
+        <button data-format="a3vertical">A3 Vert.</button>
+        <button data-format="a3landscape">A3 Lndscp</button>
+      </div>
+
       <h2>Price: <span id="price">117€</span></h2>
       <p class="subtitle">Modular luminous floor display ideal for travel agencies, trade fairs, events, real estate agencies, shops, conference rooms.</p>
       <p class="instructions">Click a hotspot to load your sheet. Toggle base material, then choose sheet.</p>
@@ -74,10 +95,15 @@
       </div>
       <div class="footer">© 2024 FLOW-FOIL Display Solutions. All rights reserved.</div>
     </div>
+
   </div>
 
   <script type="importmap">
-    {"imports":{"three":"https://unpkg.com/three@0.152.2/build/three.module.js","three/addons/":"https://unpkg.com/three@0.152.2/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"}}
+    {"imports":{
+      "three":"https://unpkg.com/three@0.152.2/build/three.module.js",
+      "three/addons/":"https://unpkg.com/three@0.152.2/examples/jsm/",
+      "gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"
+    }}
   </script>
 
   <script type="module">
@@ -88,269 +114,243 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { gsap } from 'gsap';
 
-    // --- Price logic setup ---
+    // --- Price logic ---
     const basePrice = 100;
     const materialExtra = { metal: 0, glass: 10 };
     const sheetPrices = {
-      a4vertical: 15, a4landscape: 17,
-      a5vertical: 12, a5landscape: 14,
-      a3vertical: 21, a3landscape: 27
+      a4vertical:15, a4landscape:17,
+      a5vertical:12, a5landscape:14,
+      a3vertical:21, a3landscape:27
     };
-    const sheetFormats = {}; // track which format is loaded per hotspot
-
-    function updatePrice() {
-      let price = basePrice;
-      const activeMat = document.querySelector('.material-option.active').dataset.material;
-      price += materialExtra[activeMat] || 0;
-      for (let id in sheetFormats) {
-        price += sheetPrices[sheetFormats[id]] || 0;
-      }
-      document.getElementById('price').textContent = price + '€';
+    const sheetFormats = {};
+    function updatePrice(){
+      let p = basePrice;
+      const mat = document.querySelector('.material-option.active').dataset.material;
+      p += materialExtra[mat];
+      for(let id in sheetFormats) p += sheetPrices[sheetFormats[id]];
+      document.getElementById('price').textContent = p + '€';
     }
-    // ----------------------------
+    // ---------------
 
-    const canvas   = document.getElementById('canvas');
-    const loading  = document.querySelector('.loading-overlay');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const canvas = document.getElementById('canvas');
+    const loading = document.querySelector('.loading-overlay');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.style.touchAction = 'none';
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.48;
 
-    function resize() {
+    function resize(){
       renderer.setPixelRatio(window.devicePixelRatio);
-      const w = window.innerWidth > 768 ? window.innerWidth * 0.45 : window.innerWidth;
-      const h = window.innerWidth <= 768 ? window.innerHeight * 0.8 : window.innerHeight;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
+      const w = window.innerWidth > 768 ? window.innerWidth *0.45 : window.innerWidth;
+      const h = window.innerWidth <= 768 ? window.innerHeight *0.8 : window.innerHeight;
+      renderer.setSize(w,h);
+      camera.aspect = w/h;
       camera.updateProjectionMatrix();
     }
     window.addEventListener('resize', resize);
 
-    const camera  = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
-    camera.position.set(0, 1.5, -2.73);
+    const camera = new THREE.PerspectiveCamera(65,1,0.1,1000);
+    camera.position.set(0,1.5,-2.73);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, -1, 0);
+    controls.target.set(0,-1,0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.minDistance = 1;
     controls.maxDistance = 20;
     controls.minPolarAngle = 0.1;
-    controls.maxPolarAngle = Math.PI - 0.1;
+    controls.maxPolarAngle = Math.PI-0.1;
 
     const scene = new THREE.Scene();
-    scene.add(new THREE.AmbientLight(0xffffff, 0.726));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.7318);
-    dl.position.set(2,3,7); dl.castShadow = true; scene.add(dl);
-    const fl = new THREE.DirectionalLight(0xffffff, 0.063);
+    scene.add(new THREE.AmbientLight(0xffffff,0.726));
+    const dl = new THREE.DirectionalLight(0xffffff,0.7318);
+    dl.position.set(2,3,7); dl.castShadow=true; scene.add(dl);
+    const fl = new THREE.DirectionalLight(0xffffff,0.063);
     fl.position.set(-1,4,-3); scene.add(fl);
 
     let fullModel, glassBaseMesh = null;
-    const modelParts = {}, sheets = {}, sprites = [];
-    let active = null, hov = null;
-    const loadingSheets = {};
-
-    const ray   = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    const draco      = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
+    const modelParts={}, sheets={}, sprites=[];
+    let active=null, hov=null;
+    const loadingSheets={};
+    const ray = new THREE.Raycaster(), mouse=new THREE.Vector2();
+    const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
     const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
     const rgbeLoader = new RGBELoader();
 
-    function makeHotspotTex(color) {
-      const size = 128;
-      const c = document.createElement('canvas'); c.width = c.height = size;
-      const ctx = c.getContext('2d'); const r = size/2;
-      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = size*0.12;
-      const L = size*0.6;
+    function makeHotspotTex(color){
+      const size=128, c=document.createElement('canvas');
+      c.width=c.height=size;
+      const ctx=c.getContext('2d'), r=size/2;
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=size*0.12;
+      const L=size*0.6;
       ctx.beginPath(); ctx.moveTo(r-L/2,r); ctx.lineTo(r+L/2,r); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(r,r-L/2); ctx.lineTo(r,r+L/2); ctx.stroke();
       return new THREE.CanvasTexture(c);
     }
-    function makeClearHotspotTex(color) {
-      const size = 128;
-      const c = document.createElement('canvas'); c.width = c.height = size;
-      const ctx = c.getContext('2d'); const r = size/2;
-      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = size*0.12;
-      const L = size*0.6;
+    function makeClearHotspotTex(color){
+      const size=128, c=document.createElement('canvas');
+      c.width=c.height=size;
+      const ctx=c.getContext('2d'), r=size/2;
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(r,r,r,0,2*Math.PI); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=size*0.12;
+      const L=size*0.6;
       ctx.beginPath(); ctx.moveTo(r-L/2,r-L/2); ctx.lineTo(r+L/2,r+L/2); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(r+L/2,r-L/2); ctx.lineTo(r-L/2,r+L/2); ctx.stroke();
       return new THREE.CanvasTexture(c);
     }
 
-    const plusTex       = makeHotspotTex('#000');
-    const plusHoverTex  = makeHotspotTex('#06d6a2');
-    const clearTex      = makeClearHotspotTex('#000');
-    const clearHoverTex = makeClearHotspotTex('#ff0000');
+    const plusTex = makeHotspotTex('#000'),
+          plusHoverTex = makeHotspotTex('var(--accent)'),
+          clearTex = makeClearHotspotTex('#000'),
+          clearHoverTex = makeClearHotspotTex('#ff0000');
 
-    rgbeLoader.load('docklands_02_1k.hdr', hdr => {
+    rgbeLoader.load('docklands_02_1k.hdr', hdr=>{
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = hdr;
       loadHolder();
     });
 
-    function loadHolder() {
-      gltfLoader.load('/adsholder.glb', gltf => {
-        fullModel = gltf.scene;
+    function loadHolder(){
+      gltfLoader.load('/adsholder.glb', gltf=>{
+        fullModel=gltf.scene;
         fullModel.position.set(0,-2,0);
-        fullModel.traverse(o => {
-          if (o.name) modelParts[o.name] = o;
-          if (o.isMesh) {
-            o.castShadow = o.receiveShadow = true;
-            if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        fullModel.traverse(o=>{
+          if(o.name) modelParts[o.name]=o;
+          if(o.isMesh){
+            o.castShadow=o.receiveShadow=true;
+            if(o.material.map) o.material.map.anisotropy=renderer.capabilities.getMaxAnisotropy();
           }
         });
-        modelParts.metalbase && (modelParts.metalbase.visible = true);
-        modelParts.glassbase && (modelParts.glassbase.visible = false);
+        modelParts.metalbase&&(modelParts.metalbase.visible=true);
+        modelParts.glassbase&&(modelParts.glassbase.visible=false);
         scene.add(fullModel);
 
-        // initial sheet load
-        gltfLoader.load('/a4landsr8.glb', g => {
-          const sheet = g.scene;
-          const bb = new THREE.Box3().setFromObject(sheet);
-          sheet.position.y -= bb.min.y;
-          const grp = new THREE.Group(); grp.add(sheet);
+        // initial A4 landscape
+        gltfLoader.load('/a4landsr8.glb', g=>{
+          const s=g.scene, bb=new THREE.Box3().setFromObject(s);
+          s.position.y -= bb.min.y;
+          const grp=new THREE.Group(); grp.add(s);
           grp.position.set(0.004,1.8253-2,0.003);
           grp.quaternion.copy(fullModel.quaternion);
           grp.scale.copy(fullModel.scale);
           scene.add(grp);
-          sheets[5] = grp;
-          sheetFormats[5] = 'a4landscape';    // track initial
-          loading.style.display = 'none';
+          sheets[5]=grp;
+          sheetFormats[5]='a4landscape';
+          loading.style.display='none';
           resize();
-          updatePrice();                     // initial price = 100 + 17
+          updatePrice();
         });
 
-        // create hotspots
-        const posList = [
-          [0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],[0.021,0.688,0.003],[0.021,0.3,0.003],
-          [-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],[-0.02,0.688,0.003],[-0.02,0.3,0.003]
+        const posList=[
+          [0.021,1.8253,0.003],[0.021,1.449,0.003],[0.021,1.071,0.003],
+          [0.021,0.688,0.003],[0.021,0.3,0.003],
+          [-0.02,1.82753,0.003],[-0.02,1.449,0.003],[-0.02,1.071,0.003],
+          [-0.02,0.688,0.003],[-0.02,0.3,0.003]
         ];
-        posList.forEach((p,i) => {
-          const hotspotZOffset = 0.01 - 0.04;
-          const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: plusTex, transparent: true }));
-          sp.position.set(p[0], p[1] - 2, p[2] + hotspotZOffset);
-          sp.scale.set(0.075, 0.075, 1);
-          sp.userData = {
-            id: i,
-            side: p[0] > 0 ? 'right' : 'left',
-            baseZ: p[2],
-            textures: { plus: plusTex, hover: plusHoverTex, clear: clearTex }
-          };
+        posList.forEach((p,i)=>{
+          const zOff=0.01-0.04;
+          const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:plusTex, transparent:true }));
+          sp.position.set(p[0],p[1]-2,p[2]+zOff);
+          sp.scale.set(0.075,0.075,1);
+          sp.userData={ id:i, side:p[0]>0?'right':'left', baseZ:p[2], textures:{ plus:plusTex, hover:plusHoverTex, clear:clearTex } };
           scene.add(sp);
           sprites.push(sp);
         });
       });
     }
 
-    // MATERIAL toggle
-    document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
-      document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el));
-      const mat = el.dataset.material;
-      if (mat === 'metal') {
-        if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
-        modelParts.metalbase && (modelParts.metalbase.visible = true);
-        modelParts.glassbase && (modelParts.glassbase.visible = false);
-      } else {
-        modelParts.metalbase && (modelParts.metalbase.visible = false);
-        if (glassBaseMesh) scene.remove(glassBaseMesh);
-        gltfLoader.load('/glassbase.glb', g => {
-          glassBaseMesh = g.scene;
-          glassBaseMesh.position.copy(fullModel.position);
-          glassBaseMesh.quaternion.copy(fullModel.quaternion);
-          glassBaseMesh.scale.copy(fullModel.scale);
-          scene.add(glassBaseMesh);
-        });
-      }
-      updatePrice();
-    }));
+    // material buttons
+    document.querySelectorAll('.material-option').forEach(el=>
+      el.addEventListener('click',()=>{
+        document.querySelectorAll('.material-option').forEach(b=>b.classList.toggle('active', b===el));
+        const m=el.dataset.material;
+        if(m==='metal'){
+          if(glassBaseMesh){ scene.remove(glassBaseMesh); glassBaseMesh=null; }
+          modelParts.metalbase&&(modelParts.metalbase.visible=true);
+          modelParts.glassbase&&(modelParts.glassbase.visible=false);
+        } else {
+          modelParts.metalbase&&(modelParts.metalbase.visible=false);
+          if(glassBaseMesh) scene.remove(glassBaseMesh);
+          gltfLoader.load('/glassbase.glb',g=>{
+            glassBaseMesh=g.scene;
+            ['position','quaternion','scale'].forEach(k=>glassBaseMesh[k].copy(fullModel[k]));
+            scene.add(glassBaseMesh);
+          });
+        }
+        updatePrice();
+      })
+    );
 
-    const mapR = {
-      a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8',
-      a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8',
-      a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8'
-    };
-    const mapL = {
-      a4vertical: 'a4vertr8', a4landscape: 'a4landsr8',
-      a5vertical: 'a3vertr8', a5landscape: 'a3landsr8',
-      a3vertical: 'a5vertr8', a3landscape: 'a5landsr8'
-    };
+    const mapR={ a4vertical:'a4vertlf8', a4landscape:'a4landslf8', a5vertical:'a3vertlf8', a5landscape:'a3landslf8', a3vertical:'a5vertlf8', a3landscape:'a5landslf8' };
+    const mapL={ a4vertical:'a4vertr8', a4landscape:'a4landsr8', a5vertical:'a3vertr8', a5landscape:'a3landsr8', a3vertical:'a5vertr8', a3landscape:'a5landsr8' };
 
-    function pick(x, y) {
-      ray.setFromCamera(new THREE.Vector2(x, y), camera);
-      const hit = ray.intersectObjects(sprites)[0];
-      return hit ? hit.object : null;
+    function pick(x,y){
+      ray.setFromCamera(new THREE.Vector2(x,y),camera);
+      const h=ray.intersectObjects(sprites)[0];
+      return h? h.object : null;
     }
 
-    // pointer feedback & sheet removal via hotspot
-    renderer.domElement.addEventListener('pointerdown', e => {
+    renderer.domElement.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hit = pick(x, y);
+      const rect=canvas.getBoundingClientRect(),
+            x=((e.clientX-rect.left)/rect.width)*2-1,
+            y=-((e.clientY-rect.top)/rect.height)*2+1;
+      const hit=pick(x,y);
 
-      sprites.forEach(sp => {
-        if (sp === hit) {
-          if (sp.material.map === sp.userData.textures.plus) sp.material.map = sp.userData.textures.hover;
-          else if (sp.material.map === clearTex) sp.material.map = clearHoverTex;
-          sp.material.needsUpdate = true;
+      sprites.forEach(sp=>{
+        if(sp===hit){
+          if(sp.material.map===sp.userData.textures.plus) sp.material.map=sp.userData.textures.hover;
+          else if(sp.material.map===clearTex) sp.material.map=clearHoverTex;
+          sp.material.needsUpdate=true;
         } else {
-          if (sp.material.map === plusHoverTex) { sp.material.map = plusTex; sp.material.needsUpdate = true; }
-          if (sp.material.map === clearHoverTex) { sp.material.map = clearTex; sp.material.needsUpdate = true; }
+          if(sp.material.map===plusHoverTex){ sp.material.map=plusTex; sp.material.needsUpdate=true; }
+          if(sp.material.map===clearHoverTex){ sp.material.map=clearTex; sp.material.needsUpdate=true; }
         }
       });
 
-      if (!hit) return;
-      const id = hit.userData.id;
-      if (sheets[id]) {
-        // remove sheet
+      if(!hit) return;
+      const id=hit.userData.id;
+      if(sheets[id]){
         scene.remove(sheets[id]);
         delete sheets[id];
         delete sheetFormats[id];
-        hit.material.map = plusTex;
-        hit.material.needsUpdate = true;
-        active = hit;
+        hit.material.map=plusTex; hit.material.needsUpdate=true;
+        active=hit;
         updatePrice();
-      } else if (active === hit) {
-        hit.material.map = plusTex; hit.material.needsUpdate = true;
-        active = null;
+      } else if(active===hit){
+        hit.material.map=plusTex; hit.material.needsUpdate=true;
+        active=null;
       } else {
-        hit.material.map = clearTex; hit.material.needsUpdate = true;
-        active = hit;
+        hit.material.map=clearTex; hit.material.needsUpdate=true;
+        active=hit;
       }
-    }, { passive: false });
+    },{ passive:false });
 
-    function bindBtns(btns) {
-      btns.forEach(b => b.addEventListener('click', () => {
-        if (!active) return;
-        const id = active.userData.id;
-        if (loadingSheets[id]) return;
-        loadingSheets[id] = true;
-        const fmt = b.dataset.format;
-        const side = active.userData.side;
-        const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb';
+    function bindBtns(btns){
+      btns.forEach(b=>b.addEventListener('click',()=>{
+        if(!active) return;
+        const id=active.userData.id;
+        if(loadingSheets[id]) return;
+        loadingSheets[id]=true;
+        const fmt=b.dataset.format, side=active.userData.side;
+        const file=(side==='right'?mapR[fmt]:mapL[fmt])+'.glb';
+        if(sheets[id]){ scene.remove(sheets[id]); delete sheets[id]; delete sheetFormats[id]; }
 
-        // remove existing on that hotspot (replacement)
-        if (sheets[id]) { scene.remove(sheets[id]); delete sheets[id]; delete sheetFormats[id]; }
-
-        gltfLoader.load('/' + file, g => {
-          const s = g.scene;
-          const bb = new THREE.Box3().setFromObject(s);
+        gltfLoader.load('/'+file, g=>{
+          const s=g.scene, bb=new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
-          const grp = new THREE.Group(); grp.add(s);
-          const p = active.position.clone();
-          p.z = active.userData.baseZ;
-          p.x += side === 'left' ? 0.025 : -0.025;
+          const grp=new THREE.Group(); grp.add(s);
+          const p=active.position.clone();
+          p.z=active.userData.baseZ;
+          p.x += side==='left'?0.025:-0.025;
           grp.position.copy(p);
           grp.quaternion.copy(fullModel.quaternion);
           grp.scale.copy(fullModel.scale);
           scene.add(grp);
-          sheets[id] = grp;
-          sheetFormats[id] = fmt;
-          loadingSheets[id] = false;
+          sheets[id]=grp;
+          sheetFormats[id]=fmt;
+          loadingSheets[id]=false;
           updatePrice();
         });
       }));
@@ -358,37 +358,36 @@
     bindBtns(document.querySelectorAll('#hotspot-panel button'));
     bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
 
-    renderer.domElement.addEventListener('pointermove', e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      const hoverHit = pick(x, y);
+    renderer.domElement.addEventListener('pointermove',e=>{
+      const rect=canvas.getBoundingClientRect(),
+            x=((e.clientX-rect.left)/rect.width)*2-1,
+            y=-((e.clientY-rect.top)/rect.height)*2+1;
+      const hoverHit=pick(x,y);
 
-      sprites.forEach(sp => {
-        if (sp === hoverHit) {
-          if (sp.material.map === plusTex) sp.material.map = plusHoverTex;
-          else if (sp.material.map === clearTex) sp.material.map = clearHoverTex;
-          sp.material.needsUpdate = true;
+      sprites.forEach(sp=>{
+        if(sp===hoverHit){
+          if(sp.material.map===plusTex) sp.material.map=plusHoverTex;
+          else if(sp.material.map===clearTex) sp.material.map=clearHoverTex;
+          sp.material.needsUpdate=true;
         } else {
-          if (sp.material.map === plusHoverTex) { sp.material.map = plusTex; sp.material.needsUpdate = true; }
-          if (sp.material.map === clearHoverTex) { sp.material.map = clearTex; sp.material.needsUpdate = true; }
+          if(sp.material.map===plusHoverTex){ sp.material.map=plusTex; sp.material.needsUpdate=true; }
+          if(sp.material.map===clearHoverTex){ sp.material.map=clearTex; sp.material.needsUpdate=true; }
         }
       });
 
-      if (hoverHit !== hov) {
-        if (hov) gsap.to(hov.scale, { x:0.075, y:0.075, duration:0.3, ease:'power2.out' });
-        hov = hoverHit;
-        if (hov) gsap.to(hov.scale, { x:0.1125, y:0.1125, duration:0.3, ease:'power2.out' });
+      if(hoverHit!==hov){
+        if(hov) gsap.to(hov.scale,{x:0.075,y:0.075,duration:0.3,ease:'power2.out'});
+        hov=hoverHit;
+        if(hov) gsap.to(hov.scale,{x:0.1125,y:0.1125,duration:0.3,ease:'power2.out'});
       }
     });
 
     resize();
-    (function loop() {
+    (function loop(){
       requestAnimationFrame(loop);
       controls.update();
-      renderer.render(scene, camera);
+      renderer.render(scene,camera);
     })();
   </script>
-
 </body>
 </html>
