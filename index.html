@@ -90,6 +90,44 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { gsap } from 'gsap';
 
+
+    async function loadServerPrices() {
+  console.log("INIT: Loading prices from server");
+  try {
+    const response = await fetch('/api/prices');
+    if (response.ok) {
+      const data = await response.json();
+      console.log("RECEIVED PRICES:", data);
+      
+      // Directly update all pricing variables
+      basePrice = data.basePrice || 100;
+      materialExtra = data.materialExtra || { metal: 0, glass: 10 };
+      sheetPrices = data.sheetPrices || {
+        a4vertical: 15,
+        a4landscape: 17,
+        a5vertical: 12,
+        a5landscape: 14,
+        a3vertical: 21,
+        a3landscape: 27
+      };
+      
+      console.log("UPDATED PRICES - Glass price is now:", materialExtra.glass);
+    } else {
+      console.error("Failed to load prices, status:", response.status);
+    }
+  } catch (error) {
+    console.error("Error loading prices:", error);
+  }
+}
+
+// Load prices immediately - BEFORE any 3D initialization
+(async function() {
+  await loadServerPrices();
+  console.log("Done loading prices, continuing with app initialization");
+  // Continue with the rest of your initialization
+})();
+
+
     const isMobile = window.innerWidth <= 768;
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
@@ -152,9 +190,9 @@ camera.lookAt(target);
     let active = null;
     let powerOn = false;
 
-    const basePrice = 100;
-    const materialExtra = { metal: 0, glass: 10 };
-    const sheetPrices = {
+    let basePrice = 100;
+    let materialExtra = { metal: 0, glass: 10 };
+    let sheetPrices = {
       a4vertical: 15,
       a4landscape: 17,
       a5vertical: 12,
@@ -162,14 +200,24 @@ camera.lookAt(target);
       a3vertical: 21,
       a3landscape: 27,
     };
-
-    function updatePrice() {
-      let p = basePrice;
-      const mat = document.querySelector('.material-option.active').dataset.material;
-      p += materialExtra[mat];
-      for (const id in sheetFormats) p += sheetPrices[sheetFormats[id]];
-      document.getElementById('price').textContent = p + '€';
-    }
+function updatePrice() {
+  let p = basePrice;
+  const mat = document.querySelector('.material-option.active').dataset.material;
+  const matPrice = materialExtra[mat];
+  p += matPrice;
+  
+  console.log(`PRICE CALC: Base=${basePrice}, Material=${mat} (${matPrice}€)`);
+  
+  let sheetTotal = 0;
+  for (const id in sheetFormats) {
+    const sheetPrice = sheetPrices[sheetFormats[id]];
+    sheetTotal += sheetPrice;
+  }
+  p += sheetTotal;
+  console.log(`PRICE CALC: Sheet total=${sheetTotal}€, FINAL PRICE=${p}€`);
+  
+  document.getElementById('price').textContent = p + '€';
+}
 
     function updateEmission() {
       Object.values(sheets).forEach(grp => {
@@ -256,14 +304,14 @@ camera.lookAt(target);
     const clearTex = makeClearHotspotTex('#000');
     const clearHoverTex = makeClearHotspotTex('#ff0000');
 
-    rgbeLoader.load('docklands_02_1k.hdr', hdr => {
+    rgbeLoader.load('3dmodels/docklands_02_1k.hdr', hdr => {
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = hdr;
       loadHolder();
     });
 
     function loadHolder() {
-      gltfLoader.load('/adsholder.glb', gltf => {
+      gltfLoader.load('/3dmodels/adsholder.glb', gltf => {
         fullModel = gltf.scene;
         fullModel.position.set(0, -2, 0);
         fullModel.traverse(o => {
@@ -277,7 +325,7 @@ camera.lookAt(target);
         if (modelParts.glassbase) modelParts.glassbase.visible = false;
         scene.add(fullModel);
 
-        gltfLoader.load('/a4landsr8.glb', g => {
+        gltfLoader.load('3dmodels/a4landsr8.glb', g => {
           const s = g.scene;
           const bb = new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
@@ -317,25 +365,27 @@ camera.lookAt(target);
         });
       });
     }
-
-    document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
-      document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el));
-      const m = el.dataset.material;
-      if (m === 'metal') {
-        if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
-        modelParts.metalbase.visible = true;
-        if (modelParts.glassbase) modelParts.glassbase.visible = false;
-      } else {
-        modelParts.metalbase.visible = false;
-        if (glassBaseMesh) scene.remove(glassBaseMesh);
-        gltfLoader.load('/glassbase.glb', g => {
-          glassBaseMesh = g.scene;
-          ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
-          scene.add(glassBaseMesh);
-        });
-      }
-      updatePrice();
-    }));
+document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
+  document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el));
+  const m = el.dataset.material;
+  
+  console.log(`Material selected: ${m}, price: ${materialExtra[m]}€`);
+  
+  if (m === 'metal') {
+    if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
+    modelParts.metalbase.visible = true;
+    if (modelParts.glassbase) modelParts.glassbase.visible = false;
+  } else {
+    modelParts.metalbase.visible = false;
+    if (glassBaseMesh) scene.remove(glassBaseMesh);
+    gltfLoader.load('3dmodels/glassbase.glb', g => {
+      glassBaseMesh = g.scene;
+      ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
+      scene.add(glassBaseMesh);
+    });
+  }
+  updatePrice();
+}));
 
     const mapR = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8', a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8' };
     const mapL = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a3vertr8', a5landscape: 'a3landsr8', a3vertical: 'a5vertr8', a3landscape: 'a5landsr8' };
@@ -398,7 +448,7 @@ camera.lookAt(target);
           delete sheets[id];
           delete sheetFormats[id];
         }
-        gltfLoader.load('/' + file, g => {
+        gltfLoader.load('/3dmodels/' + file, g => {
           const s = g.scene;
           const bb = new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;

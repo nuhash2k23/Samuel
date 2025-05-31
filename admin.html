@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLOW-FOIL Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    :root {
+      --primary: #000;
+      --secondary: #fff;
+      --accent: #06d6a2;
+      --blue: #3498db;
+      --red: #e74c3c;
+      --green: #27ae60;
+      --gray-light: #f5f5f5;
+      --gray: #e0e0e0;
+      --gray-dark: #888;
+    }
+    
+    body {
+      background-color: var(--gray-light);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      background-color: var(--secondary);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dashboard-container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: var(--secondary);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      color: white;
+      padding: 15px 20px;
+    }
+    
+    .dashboard-content {
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    h2 {
+      font-size: 18px;
+      margin: 25px 0 15px 0;
+    }
+    
+    .message {
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    .message.success {
+      background-color: rgba(39, 174, 96, 0.1);
+      color: var(--green);
+    }
+    
+    .message.error {
+      background-color: rgba(231, 76, 60, 0.1);
+      color: var(--red);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--gray);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input[type="number"] {
+      width: 80px;
+    }
+    
+    button {
+      background-color: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    button.logout {
+      background-color: var(--red);
+    }
+    
+    button.logout:hover {
+      background-color: #c0392b;
+    }
+    
+    button.save {
+      background-color: var(--green);
+      margin-top: 20px;
+    }
+    
+    button.save:hover {
+      background-color: #219653;
+    }
+    
+    .price-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .price-item label {
+      min-width: 150px;
+      margin-bottom: 0;
+    }
+    
+    .price-item input {
+      margin-right: 10px;
+    }
+    
+    .sheet-prices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .sheet-prices {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Content will be rendered here -->
+  </div>
+
+  <script>
+    // App state
+    const state = {
+      isAuthenticated: false,
+      password: '',
+      message: '',
+      messageType: '',
+      isLoading: false,
+      prices: {
+        basePrice: 100,
+        materialExtra: {
+          metal: 0,
+          glass: 10
+        },
+        sheetPrices: {
+          a4vertical: 15,
+          a4landscape: 17,
+          a5vertical: 12,
+          a5landscape: 14,
+          a3vertical: 21,
+          a3landscape: 27
+        }
+      }
+    };
+
+    // API endpoints
+    const API = {
+      PRICES: '/api/prices',
+      AUTH: '/api/auth'
+    };
+
+    // Load prices from server
+    async function loadPrices() {
+      try {
+        state.isLoading = true;
+        render();
+        
+        const response = await fetch(API.PRICES);
+        if (!response.ok) {
+          throw new Error('Failed to load prices');
+        }
+        
+        const data = await response.json();
+        state.prices = data;
+        state.message = '';
+        state.messageType = '';
+      } catch (error) {
+        console.error('Error loading prices:', error);
+        state.message = 'Error loading prices. Please try again.';
+        state.messageType = 'error';
+      } finally {
+        state.isLoading = false;
+        render();
+      }
+    }
+
+    // Authenticate admin
+    async function handleLogin() {
+      try {
+        state.isLoading = true;
+        state.message = '';
+        render();
+        
+        const response = await fetch(API.AUTH, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ password: state.password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          state.isAuthenticated = true;
+          state.message = '';
+          loadPrices();
+        } else {
+          state.message = 'Invalid password. Please try again.';
+          state.messageType = 'error';
+          state.isLoading = false;
+          render();
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        state.message = 'Error during login. Please try again.';
+        state.messageType = 'error';
+        state.isLoading = false;
+        render();
+      }
+    }
+
+    // Logout handler
+    function handleLogout() {
+      state.isAuthenticated = false;
+      state.password = '';
+      state.message = '';
+      state.messageType = '';
+      render();
+    }
+
+    // Price change handler
+    function handlePriceChange(type, key, value) {
+      const numValue = Number(value);
+      if (isNaN(numValue)) return;
+
+      if (type === 'base') {
+        state.prices.basePrice = numValue;
+      } else if (type === 'material') {
+        state.prices.materialExtra[key] = numValue;
+      } else if (type === 'sheet') {
+        state.prices.sheetPrices[key] = numValue;
+      }
+    }
+
+    // Save prices to server
+    async function savePrices() {
+      try {
+        state.isLoading = true;
+        state.message = '';
+        render();
+        
+        const response = await fetch(API.PRICES, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(state.prices)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to save prices');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          state.message = 'Prices saved successfully! The configurator will now use these prices.';
+          state.messageType = 'success';
+        } else {
+          state.message = data.message || 'Error saving prices.';
+          state.messageType = 'error';
+        }
+      } catch (error) {
+        console.error('Error saving prices:', error);
+        state.message = 'Error saving prices. Please try again.';
+        state.messageType = 'error';
+      } finally {
+        state.isLoading = false;
+        render();
+      }
+    }
+
+    // Format sheet names for display
+    function formatSheetName(format) {
+      return format
+        .replace(/([a-z])([0-9])/i, '$1$2 ')
+        .replace('landscape', 'Landscape')
+        .replace('vertical', 'Vertical');
+    }
+
+    // Render login page
+    function renderLoginPage() {
+      return `
+        <div class="login-container">
+          <h1>FLOW-FOIL Admin Login</h1>
+          ${state.message ? `<div class="message ${state.messageType}">${state.message}</div>` : ''}
+          <div class="form-group">
+            <label for="password">Admin Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              value="${state.password}"
+              onkeypress="if(event.key === 'Enter') handleLogin()"
+            />
+          </div>
+          <button onclick="handleLogin()" ${state.isLoading ? 'disabled' : ''}>
+            Login
+            ${state.isLoading ? '<span class="loader"></span>' : ''}
+          </button>
+        </div>
+      `;
+    }
+
+    // Render dashboard page
+    function renderDashboard() {
+      return `
+        <div class="dashboard-container">
+          <div class="dashboard-header">
+            <h1 style="margin-bottom: 0; text-align: left;">FLOW-FOIL Admin Dashboard</h1>
+            <button class="logout" onclick="handleLogout()">Logout</button>
+          </div>
+          
+          <div class="dashboard-content">
+            ${state.message ? `<div class="message ${state.messageType}">${state.message}</div>` : ''}
+            
+            <h2>Base Price</h2>
+            <div class="price-item">
+              <label>Base Price:</label>
+              <input
+                type="number"
+                min="0"
+                value="${state.prices.basePrice}"
+                onchange="handlePriceChange('base', null, this.value)"
+              />
+              <span>€</span>
+            </div>
+            
+            <h2>Material Extras</h2>
+            ${Object.entries(state.prices.materialExtra).map(([material, price]) => `
+              <div class="price-item">
+                <label style="text-transform: capitalize;">${material}:</label>
+                <input
+                  type="number"
+                  min="0"
+                  value="${price}"
+                  onchange="handlePriceChange('material', '${material}', this.value)"
+                />
+                <span>€</span>
+              </div>
+            `).join('')}
+            
+            <h2>Sheet Prices</h2>
+            <div class="sheet-prices">
+              ${Object.entries(state.prices.sheetPrices).map(([format, price]) => `
+                <div class="price-item">
+                  <label>${formatSheetName(format)}:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value="${price}"
+                    onchange="handlePriceChange('sheet', '${format}', this.value)"
+                  />
+                  <span>€</span>
+                </div>
+              `).join('')}
+            </div>
+            
+            <button class="save" onclick="savePrices()" ${state.isLoading ? 'disabled' : ''}>
+              Save Changes
+              ${state.isLoading ? '<span class="loader"></span>' : ''}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Main render function
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = state.isAuthenticated ? renderDashboard() : renderLoginPage();
+      
+      // Add event listener to password field
+      if (!state.isAuthenticated) {
+        const passwordField = document.getElementById('password');
+        passwordField.addEventListener('input', (e) => {
+          state.password = e.target.value;
+        });
+      }
+    }
+
+    // Initialize
+    render();
+
+    // Expose handlers to global scope
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
+    window.handlePriceChange = handlePriceChange;
+    window.savePrices = savePrices;
+  </script>
+</body>
+</html>
