@@ -31,6 +31,36 @@
     #power-toggle:hover { transform: translateY(-2px); border-color: var(--primary); }
     .footer { font-size:12px; color: var(--gray-dark); text-align:center; margin-top:40px; }
     .mobile-sheet-buttons { display: none; }
+    
+    /* Add notification styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(6, 214, 162, 0.9);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    .warning-message {
+      background-color: rgba(255, 193, 7, 0.1);
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+    
     @media (max-width:768px) {
       body { overflow-y:auto; }
       .container { flex-direction:column; height:auto; }
@@ -59,6 +89,9 @@
         <button id="power-toggle">Power On</button>
       </div>
       <h2 class="sheet-format-heading">Select sheet format<span class="required">*</span></h2>
+      <div class="warning-message" id="a3-warning">
+        Maximum 3 A3 sheets per side allowed. When 3 A3 sheets are placed on one side, other sheets on that side will be automatically removed and A3 sheets will be repositioned with optimal spacing.
+      </div>
       <div id="hotspot-panel" class="hotspot-panel">
         <button data-format="a4vertical">A4 Vertical</button>
         <button data-format="a4landscape">A4 Landscape</button>
@@ -77,9 +110,14 @@
       </div>
       <h2>Price: <span id="price">117€</span></h2>
       <p class="subtitle">Modular luminous floor display ideal for travel agencies, trade fairs, events, real estate agencies, shops, conference rooms.</p>
-      <p class="instructions">Click a hotspot to load your sheet. Toggle base material, then choose sheet.</p>
+      <p class="instructions">Click a hotspot to load your sheet. Toggle base material, then choose sheet. Maximum 3 A3 sheets per side. A3 combinations will auto-arrange and remove other sheets.</p>
       <div class="footer">© 2024 FLOW-FOIL Display Solutions. All rights reserved.</div>
     </div>
+  </div>
+  
+  <!-- Notification for auto-removal -->
+  <div id="notification" class="notification">
+    Sheets auto-removed for A3 combination
   </div>
   <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.152.2/build/three.module.js","three/addons/":"https://unpkg.com/three@0.152.2/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"}}</script>
   <script type="module">
@@ -90,49 +128,45 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { gsap } from 'gsap';
 
-
     async function loadServerPrices() {
-  console.log("INIT: Loading prices from server");
-  try {
-    const response = await fetch('/api/prices');
-    if (response.ok) {
-      const data = await response.json();
-      console.log("RECEIVED PRICES:", data);
-      
-      // Directly update all pricing variables
-      basePrice = data.basePrice || 100;
-      materialExtra = data.materialExtra || { metal: 0, glass: 10 };
-      sheetPrices = data.sheetPrices || {
-        a4vertical: 15,
-        a4landscape: 17,
-        a5vertical: 12,
-        a5landscape: 14,
-        a3vertical: 21,
-        a3landscape: 27
-      };
-      
-      console.log("UPDATED PRICES - Glass price is now:", materialExtra.glass);
-    } else {
-      console.error("Failed to load prices, status:", response.status);
+      console.log("INIT: Loading prices from server");
+      try {
+        const response = await fetch('/api/prices');
+        if (response.ok) {
+          const data = await response.json();
+          console.log("RECEIVED PRICES:", data);
+          
+          // Directly update all pricing variables
+          basePrice = data.basePrice || 100;
+          materialExtra = data.materialExtra || { metal: 0, glass: 10 };
+          sheetPrices = data.sheetPrices || {
+            a4vertical: 15,
+            a4landscape: 17,
+            a5vertical: 12,
+            a5landscape: 14,
+            a3vertical: 21,
+            a3landscape: 27
+          };
+          
+          console.log("UPDATED PRICES - Glass price is now:", materialExtra.glass);
+        } else {
+          console.error("Failed to load prices, status:", response.status);
+        }
+      } catch (error) {
+        console.error("Error loading prices:", error);
+      }
     }
-  } catch (error) {
-    console.error("Error loading prices:", error);
-  }
-}
 
-// Load prices immediately - BEFORE any 3D initialization
-(async function() {
-  await loadServerPrices();
-  console.log("Done loading prices, continuing with app initialization");
-  // Continue with the rest of your initialization
-})();
-
+    // Load prices immediately - BEFORE any 3D initialization
+    (async function() {
+      await loadServerPrices();
+      console.log("Done loading prices, continuing with app initialization");
+    })();
 
     const isMobile = window.innerWidth <= 768;
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
-const startZ = isMobile ? -2 : -2.73;
-// const startY = isMobile ? -1.582 :1.5;
+    const startZ = isMobile ? -2 : -2.73;
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(isMobile ? 1.5 : window.devicePixelRatio);
@@ -141,12 +175,9 @@ const startZ = isMobile ? -2 : -2.73;
     renderer.domElement.style.touchAction = 'none';
 
     const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000);
-camera.position.set(-1.3, 0.75, startZ);
-// 2) Define the point you want the camera to face
-const target = new THREE.Vector3(0, 0, 0); // e.g. the scene origin
-
-// 3) Make the camera look at that point
-camera.lookAt(target);
+    camera.position.set(-1.3, 0.75, startZ);
+    const target = new THREE.Vector3(0, 0, 0);
+    camera.lookAt(target);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, -1, 0);
@@ -190,6 +221,13 @@ camera.lookAt(target);
     let active = null;
     let powerOn = false;
 
+    // Enhanced position tracking
+    const positionStates = {}; // Track what's at each position
+    const sidePositions = {
+      right: [0, 1, 2, 3, 4], // Right side anchor indices
+      left: [5, 6, 7, 8, 9]   // Left side anchor indices
+    };
+
     let basePrice = 100;
     let materialExtra = { metal: 0, glass: 10 };
     let sheetPrices = {
@@ -200,40 +238,314 @@ camera.lookAt(target);
       a3vertical: 21,
       a3landscape: 27,
     };
-function updatePrice() {
-  let p = basePrice;
-  const mat = document.querySelector('.material-option.active').dataset.material;
-  const matPrice = materialExtra[mat];
-  p += matPrice;
-  
-  console.log(`PRICE CALC: Base=${basePrice}, Material=${mat} (${matPrice}€)`);
-  
-  let sheetTotal = 0;
-  for (const id in sheetFormats) {
-    const sheetPrice = sheetPrices[sheetFormats[id]];
-    sheetTotal += sheetPrice;
-  }
-  p += sheetTotal;
-  console.log(`PRICE CALC: Sheet total=${sheetTotal}€, FINAL PRICE=${p}€`);
-  
-  document.getElementById('price').textContent = p + '€';
-}
 
-    function updateEmission() {
-      Object.values(sheets).forEach(grp => {
-        grp.traverse(o => {
-          if (o.isMesh) {
-            if (powerOn) {
-              o.material.emissive = new THREE.Color(0xffffff);
-              o.material.emissiveIntensity = 0.75;
-              o.material.emissiveMap = o.material.map;
-            } else {
-              o.material.emissiveIntensity = 0;
-            }
-            o.material.needsUpdate = true;
+    // Initialize position tracking
+    function initializePositionTracking() {
+      for (let i = 0; i < 10; i++) {
+        positionStates[i] = { occupied: false, format: null, sheetGroup: null };
+      }
+    }
+
+    // Get positions for A3 optimal arrangement (non-overlapping anchor points)
+    function getA3OptimalPositions(side) {
+      // Use specific anchor points that provide good spacing for A3 sheets
+      return side === 'right' ? [0, 2, 4] : [5, 7, 9]; // Top, middle, bottom positions
+    }
+
+    // Clear all sheets from a side
+    function clearSideCompletely(side) {
+      const sideIndices = sidePositions[side];
+      let removedCount = 0;
+      
+      sideIndices.forEach(index => {
+        if (positionStates[index].occupied) {
+          const sheetGroup = positionStates[index].sheetGroup;
+          
+          // Remove from scene
+          if (sheetGroup) {
+            scene.remove(sheetGroup);
           }
+          
+          // Clean up tracking
+          delete sheets[index];
+          delete sheetFormats[index];
+          
+          // Reset sprite
+          sprites[index].material.map = plusTex;
+          sprites[index].material.needsUpdate = true;
+          
+          // Update position state
+          positionStates[index] = { occupied: false, format: null, sheetGroup: null };
+          
+          removedCount++;
+        }
+      });
+      
+      return removedCount;
+    }
+
+    // Place A3 sheet at specific position with safety checks
+    function placeA3SheetSafely(format, targetIndex, sourceIndex) {
+      if (loadingSheets[targetIndex]) return false;
+      
+      const side = sprites[targetIndex].userData.side;
+      const file = (side === 'right' ? mapR[format] : mapL[format]) + '.glb';
+      
+      loadingSheets[targetIndex] = true;
+      
+      return new Promise((resolve) => {
+        gltfLoader.load('/3dmodels/' + file, g => {
+          const s = g.scene;
+          const bb = new THREE.Box3().setFromObject(s);
+          s.position.y -= bb.min.y;
+          const grp = new THREE.Group();
+          grp.add(s);
+          
+          // Use target position
+          const targetSprite = sprites[targetIndex];
+          const p = targetSprite.position.clone();
+          p.z = targetSprite.userData.baseZ;
+          p.x += side === 'left' ? 0.025 : -0.025;
+          grp.position.copy(p);
+          grp.quaternion.copy(fullModel.quaternion);
+          grp.scale.copy(fullModel.scale);
+          
+          scene.add(grp);
+          
+          // Update all tracking systems
+          sheets[targetIndex] = grp;
+          sheetFormats[targetIndex] = format;
+          positionStates[targetIndex] = { 
+            occupied: true, 
+            format: format, 
+            sheetGroup: grp 
+          };
+          
+          loadingSheets[targetIndex] = false;
+          resolve(true);
         });
       });
+    }
+
+    // Count A3 sheets with proper position tracking
+    function countA3Sheets() {
+      const counts = { left: 0, right: 0 };
+      
+      Object.keys(sheetFormats).forEach(id => {
+        const format = sheetFormats[id];
+        if (isA3Format(format)) {
+          const sprite = sprites[parseInt(id)];
+          counts[sprite.userData.side]++;
+        }
+      });
+      
+      return counts;
+    }
+
+    // Enhanced A3 repositioning with collision prevention
+    async function repositionA3SheetsSecurely() {
+      const counts = countA3Sheets();
+      
+      for (const side of ['left', 'right']) {
+        const a3SheetsOnSide = [];
+        
+        // Collect A3 sheets on this side
+        Object.keys(sheetFormats).forEach(id => {
+          const format = sheetFormats[id];
+          if (isA3Format(format)) {
+            const sprite = sprites[parseInt(id)];
+            if (sprite.userData.side === side) {
+              a3SheetsOnSide.push({ id: parseInt(id), format });
+            }
+          }
+        });
+        
+        // If exactly 3 A3 sheets on this side, reorganize completely
+        if (a3SheetsOnSide.length === 3) {
+          // Step 1: Clear the entire side
+          const removedCount = clearSideCompletely(side);
+          
+          if (removedCount > 0) {
+            showNotification(`${removedCount} sheet(s) auto-removed for A3 combination on ${side} side`);
+          }
+          
+          // Step 2: Place A3 sheets at optimal positions
+          const optimalPositions = getA3OptimalPositions(side);
+          
+          for (let i = 0; i < 3; i++) {
+            const targetPosition = optimalPositions[i];
+            const format = a3SheetsOnSide[i].format;
+            
+            await placeA3SheetSafely(format, targetPosition, a3SheetsOnSide[i].id);
+          }
+          
+          console.log(`Successfully repositioned 3 A3 sheets on ${side} side at positions:`, optimalPositions);
+        }
+      }
+    }
+
+    // Enhanced price calculation with safety checks (SINGLE DECLARATION)
+    function updatePrice() {
+      let p = basePrice;
+      const matElement = document.querySelector('.material-option.active');
+      if (matElement) {
+        const mat = matElement.dataset.material;
+        const matPrice = materialExtra[mat];
+        p += matPrice;
+        
+        console.log(`PRICE CALC: Base=${basePrice}, Material=${mat} (${matPrice}€)`);
+        
+        let sheetTotal = 0;
+        
+        // Use position states for accurate counting
+        Object.keys(positionStates).forEach(id => {
+          const position = positionStates[id];
+          if (position.occupied && position.format && sheetPrices[position.format]) {
+            const sheetPrice = sheetPrices[position.format];
+            sheetTotal += sheetPrice;
+            console.log(`Sheet at position ${id} (${position.format}): ${sheetPrice}€`);
+          }
+        });
+        
+        p += sheetTotal;
+        console.log(`PRICE CALC: Sheet total=${sheetTotal}€, FINAL PRICE=${p}€`);
+        
+        document.getElementById('price').textContent = p + '€';
+      }
+    }
+
+    // Enhanced emission update with safety checks (SINGLE DECLARATION)
+    function updateEmission() {
+      Object.keys(positionStates).forEach(id => {
+        const position = positionStates[id];
+        if (position.occupied && position.sheetGroup) {
+          position.sheetGroup.traverse(o => {
+            if (o.isMesh) {
+              if (powerOn) {
+                o.material.emissive = new THREE.Color(0xffffff);
+                o.material.emissiveIntensity = 0.75;
+                o.material.emissiveMap = o.material.map;
+              } else {
+                o.material.emissiveIntensity = 0;
+              }
+              o.material.needsUpdate = true;
+            }
+          });
+        }
+      });
+    }
+
+    // Function to check if format is A3
+    function isA3Format(format) {
+      return format === 'a3vertical' || format === 'a3landscape';
+    }
+
+    // Function to update A3 warning visibility
+    function updateA3Warning() {
+      const counts = countA3Sheets();
+      const warning = document.getElementById('a3-warning');
+      if (counts.left >= 3 || counts.right >= 3) {
+        warning.style.display = 'block';
+      } else {
+        warning.style.display = 'none';
+      }
+    }
+
+    // Function to show notification
+    function showNotification(message, duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, duration);
+    }
+
+    // Secure sheet placement with overlap prevention
+    function placeSheetSecurely(format, positionId) {
+      if (loadingSheets[positionId]) return false;
+      if (positionStates[positionId].occupied) return false;
+      
+      const side = sprites[positionId].userData.side;
+      const file = (side === 'right' ? mapR[format] : mapL[format]) + '.glb';
+      
+      loadingSheets[positionId] = true;
+      
+      gltfLoader.load('/3dmodels/' + file, g => {
+        const s = g.scene;
+        const bb = new THREE.Box3().setFromObject(s);
+        s.position.y -= bb.min.y;
+        const grp = new THREE.Group();
+        grp.add(s);
+        
+        const p = sprites[positionId].position.clone();
+        p.z = sprites[positionId].userData.baseZ;
+        p.x += side === 'left' ? 0.025 : -0.025;
+        grp.position.copy(p);
+        grp.quaternion.copy(fullModel.quaternion);
+        grp.scale.copy(fullModel.scale);
+        
+        scene.add(grp);
+        
+        // Update all tracking
+        sheets[positionId] = grp;
+        sheetFormats[positionId] = format;
+        positionStates[positionId] = { 
+          occupied: true, 
+          format: format, 
+          sheetGroup: grp 
+        };
+        
+        loadingSheets[positionId] = false;
+        
+        // Reset active state
+        active = null;
+        sprites[positionId].material.map = plusTex;
+        sprites[positionId].material.needsUpdate = true;
+        
+        updateA3Warning();
+        updatePrice();
+        updateEmission();
+        
+        // Check if we need to reorganize A3 sheets
+        const counts = countA3Sheets();
+        const currentSide = sprites[positionId].userData.side;
+        if (isA3Format(format) && counts[currentSide] === 3) {
+          setTimeout(() => repositionA3SheetsSecurely(), 100);
+        }
+      });
+      
+      return true;
+    }
+
+    // Secure sheet removal
+    function removeSheetSecurely(positionId) {
+      if (!positionStates[positionId].occupied) return false;
+      
+      const sheetGroup = positionStates[positionId].sheetGroup;
+      
+      // Remove from scene
+      if (sheetGroup) {
+        scene.remove(sheetGroup);
+      }
+      
+      // Clean up all tracking
+      delete sheets[positionId];
+      delete sheetFormats[positionId];
+      
+      // Reset position state
+      positionStates[positionId] = { occupied: false, format: null, sheetGroup: null };
+      
+      // Reset sprite
+      sprites[positionId].material.map = plusTex;
+      sprites[positionId].material.needsUpdate = true;
+      
+      updateA3Warning();
+      updatePrice();
+      updateEmission();
+      
+      return true;
     }
 
     document.getElementById('power-toggle').addEventListener('click', () => {
@@ -325,35 +637,45 @@ function updatePrice() {
         if (modelParts.glassbase) modelParts.glassbase.visible = false;
         scene.add(fullModel);
 
+        // Initialize position tracking
+        initializePositionTracking();
+
+        // Load default sheet
         gltfLoader.load('3dmodels/a4landsr8.glb', g => {
           const s = g.scene;
           const bb = new THREE.Box3().setFromObject(s);
           s.position.y -= bb.min.y;
           const grp = new THREE.Group();
           grp.add(s);
-          grp.position.set(0.004, 1.8253 - 2, 0.003);
+          grp.position.set(0.004, 1.0627 - 2, 0.003);
           grp.quaternion.copy(fullModel.quaternion);
           grp.scale.copy(fullModel.scale);
           scene.add(grp);
+          
+          // Update tracking for default sheet
           sheets[5] = grp;
           sheetFormats[5] = 'a4landscape';
+          positionStates[5] = { occupied: true, format: 'a4landscape', sheetGroup: grp };
+          
           loading.style.display = 'none';
           updatePrice();
           updateEmission();
         });
 
+        // Updated anchor points - moved up from previous version
         const posList = [
-          [0.021, 1.8253, 0.003],
-          [0.021, 1.449, 0.003],
-          [0.021, 1.071, 0.003],
-          [0.021, 0.688, 0.003],
-          [0.021, 0.3, 0.003],
-          [-0.02, 1.82753, 0.003],
-          [-0.02, 1.449, 0.003],
-          [-0.02, 1.071, 0.003],
-          [-0.02, 0.688, 0.003],
-          [-0.02, 0.3, 0.003],
+          [0.021, 1.5669, 0.003],  // Top right (moved up from 1.3169)
+          [0.021, 1.3127, 0.003],  // (moved up from 1.0627)
+          [0.021, 1.0585, 0.003],  // Middle right (moved up from 0.8085)
+          [0.021, 0.8042, 0.003],  // (moved up from 0.5542)
+          [0.021, 0.55, 0.003],    // Bottom right (moved up from 0.3)
+          [-0.02, 1.5669, 0.003],  // Top left (moved up from 1.3169)
+          [-0.02, 1.3127, 0.003],  // (moved up from 1.0627)
+          [-0.02, 1.0585, 0.003],  // Middle left (moved up from 1.0585)
+          [-0.02, 0.8042, 0.003],  // (moved up from 0.5542)
+          [-0.02, 0.55, 0.003],    // Bottom left (moved up from 0.3)
         ];
+        
         posList.forEach((p, i) => {
           const zOff = 0.01 - 0.04;
           const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: plusTex, transparent: true }));
@@ -365,27 +687,28 @@ function updatePrice() {
         });
       });
     }
-document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
-  document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el));
-  const m = el.dataset.material;
-  
-  console.log(`Material selected: ${m}, price: ${materialExtra[m]}€`);
-  
-  if (m === 'metal') {
-    if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
-    modelParts.metalbase.visible = true;
-    if (modelParts.glassbase) modelParts.glassbase.visible = false;
-  } else {
-    modelParts.metalbase.visible = false;
-    if (glassBaseMesh) scene.remove(glassBaseMesh);
-    gltfLoader.load('3dmodels/glassbase.glb', g => {
-      glassBaseMesh = g.scene;
-      ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
-      scene.add(glassBaseMesh);
-    });
-  }
-  updatePrice();
-}));
+
+    document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
+      document.querySelectorAll('.material-option').forEach(b => b.classList.toggle('active', b === el));
+      const m = el.dataset.material;
+      
+      console.log(`Material selected: ${m}, price: ${materialExtra[m]}€`);
+      
+      if (m === 'metal') {
+        if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
+        modelParts.metalbase.visible = true;
+        if (modelParts.glassbase) modelParts.glassbase.visible = false;
+      } else {
+        modelParts.metalbase.visible = false;
+        if (glassBaseMesh) scene.remove(glassBaseMesh);
+        gltfLoader.load('3dmodels/glassbase.glb', g => {
+          glassBaseMesh = g.scene;
+          ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
+          scene.add(glassBaseMesh);
+        });
+      }
+      updatePrice();
+    }));
 
     const mapR = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8', a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8' };
     const mapL = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a3vertr8', a5landscape: 'a3landsr8', a3vertical: 'a5vertr8', a3landscape: 'a5landsr8' };
@@ -402,6 +725,7 @@ document.querySelectorAll('.material-option').forEach(el => el.addEventListener(
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       const hit = pick(x, y);
+      
       sprites.forEach(sp => {
         if (sp === hit) {
           if (sp.material.map === sp.userData.textures.plus) sp.material.map = sp.userData.textures.hover;
@@ -412,61 +736,59 @@ document.querySelectorAll('.material-option').forEach(el => el.addEventListener(
           if (sp.material.map === clearHoverTex) { sp.material.map = clearTex; sp.material.needsUpdate = true; }
         }
       });
+      
       if (!hit) return;
+      
       const id = hit.userData.id;
-      if (sheets[id]) {
-        scene.remove(sheets[id]);
-        delete sheets[id];
-        delete sheetFormats[id];
-        hit.material.map = plusTex;
-        hit.material.needsUpdate = true;
+      
+      // Handle existing sheet removal
+      if (positionStates[id].occupied) {
+        removeSheetSecurely(id);
         active = null;
-      } else if (active === hit) {
-        hit.material.map = plusTex;
-        hit.material.needsUpdate = true;
-        active = null;
-      } else {
-        hit.material.map = clearTex;
-        hit.material.needsUpdate = true;
-        active = hit;
+        return;
       }
-      updatePrice();
-      updateEmission();
+      
+      // Handle active state toggle
+      if (active === hit) {
+        hit.material.map = plusTex;
+        hit.material.needsUpdate = true;
+        active = null;
+        return;
+      }
+      
+      // Set new active position
+      hit.material.map = clearTex;
+      hit.material.needsUpdate = true;
+      active = hit;
     }, { passive: false });
 
     function bindBtns(btns) {
       btns.forEach(b => b.addEventListener('click', () => {
         if (!active) return;
-        const id = active.userData.id;
-        if (loadingSheets[id]) return;
-        loadingSheets[id] = true;
+        
         const fmt = b.dataset.format;
+        const id = active.userData.id;
         const side = active.userData.side;
-        const file = (side === 'right' ? mapR[fmt] : mapL[fmt]) + '.glb';
-        if (sheets[id]) {
-          scene.remove(sheets[id]);
-          delete sheets[id];
-          delete sheetFormats[id];
+        
+        // Prevent action if position is loading or occupied
+        if (loadingSheets[id] || positionStates[id].occupied) {
+          return;
         }
-        gltfLoader.load('/3dmodels/' + file, g => {
-          const s = g.scene;
-          const bb = new THREE.Box3().setFromObject(s);
-          s.position.y -= bb.min.y;
-          const grp = new THREE.Group();
-          grp.add(s);
-          const p = active.position.clone();
-          p.z = active.userData.baseZ;
-          p.x += side === 'left' ? 0.025 : -0.025;
-          grp.position.copy(p);
-          grp.quaternion.copy(fullModel.quaternion);
-          grp.scale.copy(fullModel.scale);
-          scene.add(grp);
-          sheets[id] = grp;
-          sheetFormats[id] = fmt;
-          loadingSheets[id] = false;
-          updatePrice();
-          updateEmission();
-        });
+        
+        // Check A3 limits before placement
+        if (isA3Format(fmt)) {
+          const counts = countA3Sheets();
+          if (counts[side] >= 3) {
+            alert(`Maximum 3 A3 sheets allowed per side. This side already has ${counts[side]} A3 sheets.`);
+            return;
+          }
+        }
+        
+        // Place sheet using secure method
+        const success = placeSheetSecurely(fmt, id);
+        if (!success) {
+          console.warn(`Failed to place sheet at position ${id}`);
+        }
       }));
     }
 
@@ -495,8 +817,43 @@ document.querySelectorAll('.material-option').forEach(el => el.addEventListener(
       controls.update();
       renderer.render(scene, camera);
     })();
+
+    // Safety function to validate system state
+    function validateSystemState() {
+      let inconsistencies = 0;
+      
+      // Check for inconsistencies between different tracking systems
+      Object.keys(sheets).forEach(id => {
+        if (!positionStates[id] || !positionStates[id].occupied) {
+          console.warn(`Position ${id} has sheet but state shows unoccupied`);
+          inconsistencies++;
+        }
+      });
+      
+      Object.keys(positionStates).forEach(id => {
+        const state = positionStates[id];
+        if (state.occupied && !sheets[id]) {
+          console.warn(`Position ${id} state shows occupied but no sheet exists`);
+          inconsistencies++;
+        }
+      });
+      
+      if (inconsistencies > 0) {
+        console.warn(`Found ${inconsistencies} state inconsistencies`);
+      }
+      
+      return inconsistencies === 0;
+    }
+
+    // Periodic state validation (optional, for debugging)
+    if (window.location.hash === '#debug') {
+      setInterval(() => {
+        const isValid = validateSystemState();
+        if (!isValid) {
+          console.warn('System state validation failed');
+        }
+      }, 5000);
+    }
   </script>
 </body>
 </html>
-
-
