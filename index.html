@@ -135,14 +135,147 @@
       display: none;
     }
     
+    /* Mobile-specific styles */
+    .mobile-controls {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 2px solid var(--gray);
+      padding: 16px;
+      z-index: 100;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .mobile-format-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .mobile-format-selector button {
+      padding: 8px 4px;
+      font-size: 12px;
+      border: 1px solid var(--gray);
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .mobile-format-selector button.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    
+    .mobile-side-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .mobile-side-buttons button {
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .mobile-side-buttons button:disabled {
+      background: var(--gray);
+      border-color: var(--gray);
+      color: var(--gray-dark);
+    }
+    
+    .mobile-quick-info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      z-index: 90;
+      display: none;
+      text-align: center;
+    }
+    
+    .mobile-queue-toggle {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 90;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .mobile-queue-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      display: none;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .mobile-queue-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 60px;
+    }
+    
+    .mobile-queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .mobile-queue-close {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+    }
+    
     @media (max-width:768px) {
-      body { overflow-y:auto; }
+      body { overflow-y:auto; padding-bottom: 140px; }
       .container { flex-direction:column; height:auto; }
-      .canvas-container { width:100%; height:80vh; }
-      .configurator { width:100%; height:80vh; }
-      .hotspot-panel, .sheet-format-heading, .instructions { display:none; }
-      .mobile-sheet-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-      .mobile-sheet-buttons button { border-radius: 6px; padding: 8px 12px; background: black; backdrop-filter: blur(5px); margin-top: 25px; transform-origin: center; cursor: pointer; color: white; }
+      .canvas-container { width:100%; height:50vh; } /* Reduced from 80vh */
+      .configurator { width:100%; height:auto; padding: 20px; }
+      .hotspot-panel, .sheet-format-heading, .instructions, .side-selection { display:none; }
+      .pole-status, .sheet-queue { display: none; }
+      .mobile-sheet-buttons { display: none; }
+      .mobile-controls { display: block; }
+      .mobile-quick-info { display: block; }
+      .mobile-queue-toggle { display: block; }
     }
   </style>
 </head>
@@ -224,6 +357,45 @@
       </div>
       
       <div class="footer">© 2024 FLOW-FOIL Display Solutions. All rights reserved.</div>
+    </div>
+  </div>
+  
+  <!-- Mobile-specific UI -->
+  <div class="mobile-quick-info" id="mobile-info">
+    <span id="mobile-status">Select format below, then choose side</span>
+  </div>
+  
+  <button class="mobile-queue-toggle" id="mobile-queue-btn">📋</button>
+  
+  <div class="mobile-queue-overlay" id="mobile-queue-overlay">
+    <div class="mobile-queue-content">
+      <div class="mobile-queue-header">
+        <h3>Current Sheets</h3>
+        <button class="mobile-queue-close" id="mobile-queue-close">✕</button>
+      </div>
+      <div id="mobile-queue-left">
+        <h4>Left Side:</h4>
+        <div id="mobile-left-items"></div>
+      </div>
+      <div id="mobile-queue-right" style="margin-top: 16px;">
+        <h4>Right Side:</h4>
+        <div id="mobile-right-items"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mobile-controls" id="mobile-controls">
+    <div class="mobile-format-selector" id="mobile-format-selector">
+      <button data-format="a4vertical" data-height="30">A4 V</button>
+      <button data-format="a4landscape" data-height="21">A4 H</button>
+      <button data-format="a5vertical" data-height="21">A5 V</button>
+      <button data-format="a5landscape" data-height="15">A5 H</button>
+      <button data-format="a3vertical" data-height="42">A3 V</button>
+      <button data-format="a3landscape" data-height="30">A3 H</button>
+    </div>
+    <div class="mobile-side-buttons">
+      <button id="mobile-add-left" disabled>Add to Left</button>
+      <button id="mobile-add-right" disabled>Add to Right</button>
     </div>
   </div>
   
@@ -522,8 +694,8 @@
         const fillText = document.getElementById(`${side}-fill-text`);
         const remainingText = document.getElementById(`${side}-remaining`);
         
-        progressBar.style.width = displayFillPercent + '%'; // Show based on 150cm
-        fillText.textContent = `${Math.round(poleState[side].totalHeight)}cm / 150cm`; // Show 150cm
+        if (progressBar) progressBar.style.width = displayFillPercent + '%'; // Show based on 150cm
+        if (fillText) fillText.textContent = `${Math.round(poleState[side].totalHeight)}cm / 150cm`; // Show 150cm
         if (remainingText) {
           // Show remaining based on display height for UI
           const displayRemaining = DISPLAY_HEIGHT - poleState[side].totalHeight;
@@ -536,6 +708,9 @@
       
       // Update button states based on available space (use real height)
       updateButtonStates();
+      
+      // Update mobile UI
+      updateMobileUI();
     }
 
     // Update queue display for each side
@@ -756,8 +931,159 @@
       }));
     }
 
-    bindBtns(document.querySelectorAll('#hotspot-panel button'));
-    bindBtns(document.querySelectorAll('#mobile-sheet-buttons button'));
+    // Initialize mobile UI
+    if (isMobile) {
+      setTimeout(() => {
+        updateMobileUI();
+      }, 100);
+    }
+
+    // Mobile interface management
+    let mobileSelectedFormat = null;
+    
+    function updateMobileUI() {
+      if (!isMobile) return;
+      
+      const leftRemaining = Math.max(0, POLE_HEIGHT - poleState.left.totalHeight);
+      const rightRemaining = Math.max(0, POLE_HEIGHT - poleState.right.totalHeight);
+      
+      // Update status info
+      const mobileStatus = document.getElementById('mobile-status');
+      if (mobileSelectedFormat) {
+        const needed = SHEET_DIMENSIONS[mobileSelectedFormat].height;
+        const canFitLeft = leftRemaining >= needed;
+        const canFitRight = rightRemaining >= needed;
+        
+        if (!canFitLeft && !canFitRight) {
+          mobileStatus.textContent = `${SHEET_DIMENSIONS[mobileSelectedFormat].displayName} - No space on either side`;
+        } else {
+          mobileStatus.textContent = `${SHEET_DIMENSIONS[mobileSelectedFormat].displayName} selected - Choose side`;
+        }
+      } else {
+        mobileStatus.textContent = `Left: ${Math.round(leftRemaining)}cm | Right: ${Math.round(rightRemaining)}cm available`;
+      }
+      
+      // Update side buttons
+      const leftBtn = document.getElementById('mobile-add-left');
+      const rightBtn = document.getElementById('mobile-add-right');
+      
+      if (mobileSelectedFormat) {
+        leftBtn.disabled = !canFitSheet('left', mobileSelectedFormat);
+        rightBtn.disabled = !canFitSheet('right', mobileSelectedFormat);
+        leftBtn.textContent = `Add to Left (${Math.round(leftRemaining)}cm)`;
+        rightBtn.textContent = `Add to Right (${Math.round(rightRemaining)}cm)`;
+      } else {
+        leftBtn.disabled = true;
+        rightBtn.disabled = true;
+        leftBtn.textContent = 'Add to Left';
+        rightBtn.textContent = 'Add to Right';
+      }
+      
+      // Update mobile queue
+      updateMobileQueue();
+    }
+    
+    function updateMobileQueue() {
+      const leftItems = document.getElementById('mobile-left-items');
+      const rightItems = document.getElementById('mobile-right-items');
+      
+      // Clear existing items
+      leftItems.innerHTML = '';
+      rightItems.innerHTML = '';
+      
+      // Add left side sheets
+      if (poleState.left.sheets.length === 0) {
+        leftItems.innerHTML = '<p style="color: #888; font-size: 14px;">No sheets</p>';
+      } else {
+        poleState.left.sheets.forEach(sheet => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f5f5f5; border-radius: 6px; margin-bottom: 8px;';
+          item.innerHTML = `
+            <span style="font-size: 14px;">${SHEET_DIMENSIONS[sheet.format].displayName}</span>
+            <button onclick="removeSheetFromPole('left', '${sheet.id}'); updateMobileUI();" style="background: #ff4757; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px;">Remove</button>
+          `;
+          leftItems.appendChild(item);
+        });
+      }
+      
+      // Add right side sheets
+      if (poleState.right.sheets.length === 0) {
+        rightItems.innerHTML = '<p style="color: #888; font-size: 14px;">No sheets</p>';
+      } else {
+        poleState.right.sheets.forEach(sheet => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f5f5f5; border-radius: 6px; margin-bottom: 8px;';
+          item.innerHTML = `
+            <span style="font-size: 14px;">${SHEET_DIMENSIONS[sheet.format].displayName}</span>
+            <button onclick="removeSheetFromPole('right', '${sheet.id}'); updateMobileUI();" style="background: #ff4757; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px;">Remove</button>
+          `;
+          rightItems.appendChild(item);
+        });
+      }
+    }
+
+    // Mobile event listeners
+    if (isMobile) {
+      // Format selection
+      document.querySelectorAll('#mobile-format-selector button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Toggle selection
+          const wasSelected = btn.classList.contains('selected');
+          document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
+          
+          if (!wasSelected) {
+            btn.classList.add('selected');
+            mobileSelectedFormat = btn.dataset.format;
+          } else {
+            mobileSelectedFormat = null;
+          }
+          
+          updateMobileUI();
+        });
+      });
+      
+      // Side buttons
+      document.getElementById('mobile-add-left').addEventListener('click', () => {
+        if (mobileSelectedFormat) {
+          const success = addSheetToPole('left', mobileSelectedFormat);
+          if (success) {
+            // Clear selection after successful add
+            mobileSelectedFormat = null;
+            document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
+            updateMobileUI();
+          }
+        }
+      });
+      
+      document.getElementById('mobile-add-right').addEventListener('click', () => {
+        if (mobileSelectedFormat) {
+          const success = addSheetToPole('right', mobileSelectedFormat);
+          if (success) {
+            // Clear selection after successful add
+            mobileSelectedFormat = null;
+            document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
+            updateMobileUI();
+          }
+        }
+      });
+      
+      // Queue toggle
+      document.getElementById('mobile-queue-btn').addEventListener('click', () => {
+        document.getElementById('mobile-queue-overlay').style.display = 'block';
+        updateMobileQueue();
+      });
+      
+      document.getElementById('mobile-queue-close').addEventListener('click', () => {
+        document.getElementById('mobile-queue-overlay').style.display = 'none';
+      });
+      
+      // Close queue when clicking outside
+      document.getElementById('mobile-queue-overlay').addEventListener('click', (e) => {
+        if (e.target.id === 'mobile-queue-overlay') {
+          document.getElementById('mobile-queue-overlay').style.display = 'none';
+        }
+      });
+    }
 
     (function animate() {
       requestAnimationFrame(animate);
@@ -769,6 +1095,15 @@
     setTimeout(() => {
       updateUI();
     }, 100);
+
+    // Bind desktop buttons  
+    if (!isMobile) {
+      bindBtns(document.querySelectorAll('#hotspot-panel button'));
+    }
+
+    // Make removeSheetFromPole globally accessible for mobile buttons
+    window.removeSheetFromPole = removeSheetFromPole;
+    window.updateMobileUI = updateMobileUI;
   </script>
 </body>
 </html>
