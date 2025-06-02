@@ -524,7 +524,7 @@
       return hasEnoughSpace;
     }
 
-    // Calculate Y position for a new sheet (stack from bottom up) - FIXED spacing logic
+    // Calculate Y position for a new sheet (stack from top down) - FIXED spacing logic
     function calculateSheetPosition(side, format) {
       const sheets = poleState[side].sheets;
       let cumulativeHeight = 0;
@@ -536,14 +536,18 @@
         cumulativeHeight += sheet.spacing || MIN_SPACING;
       });
       
-      // Convert to 3D scene coordinates (from bottom of pole upward)
-      const yPosition = POLE_BASE_Y + (cumulativeHeight * CM_TO_SCENE_RATIO);
+      // Add current sheet height to total
+      const currentSheetHeight = SHEET_DIMENSIONS[format].height;
+      const totalHeight = cumulativeHeight + currentSheetHeight;
       
-      // Safety check - never exceed pole bounds
-      const maxAllowedY = POLE_TOP_Y - (SHEET_DIMENSIONS[format].height * CM_TO_SCENE_RATIO);
-      const finalY = Math.min(yPosition, maxAllowedY);
+      // Convert to 3D scene coordinates (from top of pole downward)
+      const yPosition = POLE_TOP_Y - (totalHeight * CM_TO_SCENE_RATIO);
       
-      console.log(`Positioning ${format} on ${side}: Cumulative: ${cumulativeHeight}cm, Y: ${yPosition}, Final Y: ${finalY}, Next spacing: ${getSpacingForFormat(format)}cm`);
+      // Safety check - never go below pole base
+      const minAllowedY = POLE_BASE_Y;
+      const finalY = Math.max(yPosition, minAllowedY);
+      
+      console.log(`Positioning ${format} on ${side}: Cumulative: ${cumulativeHeight}cm, Total: ${totalHeight}cm, Y: ${yPosition}, Final Y: ${finalY}, Next spacing: ${getSpacingForFormat(format)}cm`);
       
       return finalY;
     }
@@ -561,8 +565,8 @@
       const sheetHeight = SHEET_DIMENSIONS[format].height;
       const yPosition = calculateSheetPosition(side, format);
       
-      // Final safety check - never allow positioning above pole
-      if (yPosition + (sheetHeight * CM_TO_SCENE_RATIO) > POLE_TOP_Y) {
+      // Final safety check - never allow positioning below pole base
+      if (yPosition < POLE_BASE_Y) {
         showNotification(`Sheet would exceed pole height on ${side} side`, 3000);
         return false;
       }
@@ -577,7 +581,7 @@
         const grp = new THREE.Group();
         grp.add(s);
         
-        // Position the sheet (bottom-up stacking) - ADJUSTED X POSITIONING
+        // Position the sheet (top-down stacking) - ADJUSTED X POSITIONING
         const x = side === 'left' ? -0.01 : 0.011; // Moved closer to center
         grp.position.set(x, yPosition, 0.003);
         grp.quaternion.copy(fullModel.quaternion);
@@ -638,24 +642,24 @@
       return true;
     }
 
-    // Reposition all sheets on a side (after removal) - FIXED spacing logic
+    // Reposition all sheets on a side (after removal) - FIXED spacing logic for top-down
     function repositionAllSheets(side) {
       const sheets = poleState[side].sheets;
       let cumulativeHeight = 0;
       
       sheets.forEach((sheet, index) => {
-        // Position this sheet at current cumulative height
-        const yPosition = POLE_BASE_Y + (cumulativeHeight * CM_TO_SCENE_RATIO);
+        // Add current sheet height to cumulative
+        cumulativeHeight += sheet.height;
         
-        // Safety check
-        const maxY = POLE_TOP_Y - (sheet.height * CM_TO_SCENE_RATIO);
-        const finalY = Math.min(yPosition, maxY);
+        // Position this sheet from top down
+        const yPosition = POLE_TOP_Y - (cumulativeHeight * CM_TO_SCENE_RATIO);
+        
+        // Safety check - never go below pole base
+        const minY = POLE_BASE_Y;
+        const finalY = Math.max(yPosition, minY);
         
         sheet.yPosition = finalY;
         sheet.group.position.y = finalY;
-        
-        // Add this sheet's height to cumulative
-        cumulativeHeight += sheet.height;
         
         // Add spacing after this sheet (except for the last one)
         if (index < sheets.length - 1) {
