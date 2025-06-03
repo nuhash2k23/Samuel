@@ -234,7 +234,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       z-index: 200;
       display: none;
       padding: 20px;
@@ -242,17 +244,27 @@
     }
     
     .mobile-queue-content {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 24px;
       margin-top: 60px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
     
     .mobile-queue-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .mobile-queue-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
     }
     
     .mobile-queue-close {
@@ -263,6 +275,65 @@
       width: 36px;
       height: 36px;
       cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mobile-queue-section {
+      margin-bottom: 20px;
+    }
+    
+    .mobile-queue-section h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    
+    .mobile-queue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .mobile-queue-item span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .mobile-queue-item button {
+      background: #ff4757;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .mobile-queue-item button:hover {
+      background: #ff3838;
+      transform: scale(1.05);
+    }
+    
+    .mobile-queue-empty {
+      color: #888;
+      font-size: 14px;
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
     }
     
     @media (max-width:768px) {
@@ -374,11 +445,11 @@
         <h3>Current Sheets</h3>
         <button class="mobile-queue-close" id="mobile-queue-close">✕</button>
       </div>
-      <div id="mobile-queue-left">
+      <div class="mobile-queue-section" id="mobile-queue-left">
         <h4>Left Side:</h4>
         <div id="mobile-left-items"></div>
       </div>
-      <div id="mobile-queue-right" style="margin-top: 16px;">
+      <div class="mobile-queue-section" id="mobile-queue-right">
         <h4>Right Side:</h4>
         <div id="mobile-right-items"></div>
       </div>
@@ -1002,30 +1073,60 @@
       
       // Add left side sheets
       if (poleState.left.sheets.length === 0) {
-        leftItems.innerHTML = '<p style="color: #888; font-size: 14px;">No sheets</p>';
+        leftItems.innerHTML = '<div class="mobile-queue-empty">No sheets added</div>';
       } else {
-        poleState.left.sheets.forEach(sheet => {
+        poleState.left.sheets.forEach((sheet, index) => {
           const item = document.createElement('div');
-          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f5f5f5; border-radius: 6px; margin-bottom: 8px;';
-          item.innerHTML = `
-            <span style="font-size: 14px;">${SHEET_DIMENSIONS[sheet.format].displayName}</span>
-            <button onclick="removeSheetFromPole('left', '${sheet.id}'); updateMobileUI();" style="background: #ff4757; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px;">Remove</button>
-          `;
+          item.className = 'mobile-queue-item';
+          
+          const span = document.createElement('span');
+          span.textContent = SHEET_DIMENSIONS[sheet.format].displayName;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'mobile-remove-btn';
+          removeBtn.textContent = 'Remove';
+          
+          // Use direct click handler with closure to capture the correct values
+          removeBtn.addEventListener('click', () => {
+            console.log('Removing sheet:', sheet.id, 'from left side');
+            const success = removeSheetFromPole('left', sheet.id);
+            if (success) {
+              updateMobileUI();
+            }
+          });
+          
+          item.appendChild(span);
+          item.appendChild(removeBtn);
           leftItems.appendChild(item);
         });
       }
       
       // Add right side sheets
       if (poleState.right.sheets.length === 0) {
-        rightItems.innerHTML = '<p style="color: #888; font-size: 14px;">No sheets</p>';
+        rightItems.innerHTML = '<div class="mobile-queue-empty">No sheets added</div>';
       } else {
-        poleState.right.sheets.forEach(sheet => {
+        poleState.right.sheets.forEach((sheet, index) => {
           const item = document.createElement('div');
-          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f5f5f5; border-radius: 6px; margin-bottom: 8px;';
-          item.innerHTML = `
-            <span style="font-size: 14px;">${SHEET_DIMENSIONS[sheet.format].displayName}</span>
-            <button onclick="removeSheetFromPole('right', '${sheet.id}'); updateMobileUI();" style="background: #ff4757; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px;">Remove</button>
-          `;
+          item.className = 'mobile-queue-item';
+          
+          const span = document.createElement('span');
+          span.textContent = SHEET_DIMENSIONS[sheet.format].displayName;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'mobile-remove-btn';
+          removeBtn.textContent = 'Remove';
+          
+          // Use direct click handler with closure to capture the correct values
+          removeBtn.addEventListener('click', () => {
+            console.log('Removing sheet:', sheet.id, 'from right side');
+            const success = removeSheetFromPole('right', sheet.id);
+            if (success) {
+              updateMobileUI();
+            }
+          });
+          
+          item.appendChild(span);
+          item.appendChild(removeBtn);
           rightItems.appendChild(item);
         });
       }
@@ -1086,7 +1187,7 @@
         document.getElementById('mobile-queue-overlay').style.display = 'none';
       });
       
-      // Close queue when clicking outside
+      // Close queue when clicking outside content
       document.getElementById('mobile-queue-overlay').addEventListener('click', (e) => {
         if (e.target.id === 'mobile-queue-overlay') {
           document.getElementById('mobile-queue-overlay').style.display = 'none';
@@ -1110,7 +1211,7 @@
       bindBtns(document.querySelectorAll('#hotspot-panel button'));
     }
 
-    // Make removeSheetFromPole globally accessible for mobile buttons
+    // Make functions globally accessible for mobile
     window.removeSheetFromPole = removeSheetFromPole;
     window.updateMobileUI = updateMobileUI;
   </script>
