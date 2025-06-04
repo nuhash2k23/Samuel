@@ -575,17 +575,105 @@
     let powerOn = false;
 
     // Pricing system
-    let basePrice = 100;
-    let materialExtra = { metal: 0, glass: 10 };
-    let sheetPrices = {
-      a4vertical: 15,
-      a4landscape: 17,
-      a5vertical: 12,
-      a5landscape: 14,
-      a3vertical: 21,
-      a3landscape: 27,
-    };
+  let basePrice = 100;
+let materialExtra = { metal: 0, glass: 10 };
+let sheetPrices = {
+  a4vertical: 15,
+  a4landscape: 17,
+  a5vertical: 12,
+  a5landscape: 14,
+  a3vertical: 21,
+  a3landscape: 27,
+};
 
+// API endpoints
+const API_ENDPOINTS = {
+  PRICES: '/api/prices'
+};
+
+// Load prices from server
+async function loadPricesFromServer() {
+  try {
+    console.log('Loading prices from server...');
+    const response = await fetch(API_ENDPOINTS.PRICES);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const serverPrices = await response.json();
+    
+    // Update local pricing variables
+    basePrice = serverPrices.basePrice || basePrice;
+    materialExtra = serverPrices.materialExtra || materialExtra;
+    sheetPrices = serverPrices.sheetPrices || sheetPrices;
+    
+    // Update the displayed price
+    updatePrice();
+    
+    console.log('Prices loaded successfully:', serverPrices);
+    showNotification('Prices updated from server');
+    
+    return true;
+  } catch (error) {
+    console.error('Error loading prices from server:', error);
+    showNotification('Using default prices - server unavailable', 4000);
+    return false;
+  }
+}
+
+// Add refresh button functionality
+function addRefreshButton() {
+  // Find a good place to add the refresh button
+  const configurator = document.querySelector('.configurator');
+  const priceElement = document.getElementById('price');
+  
+  if (priceElement && !document.getElementById('refresh-prices')) {
+    // Create refresh button
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refresh-prices';
+    refreshBtn.innerHTML = '↻ Refresh Prices';
+    refreshBtn.style.cssText = `
+      margin-left: 10px;
+      padding: 5px 10px;
+      font-size: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      vertical-align: middle;
+    `;
+    
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '↻ Loading...';
+      
+      await loadPricesFromServer();
+      
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = '↻ Refresh Prices';
+    });
+    
+    // Add button next to price
+    priceElement.parentNode.appendChild(refreshBtn);
+  }
+}
+
+// Initialize prices when page loads
+async function initializePricing() {
+  // Try to load from server first
+  const success = await loadPricesFromServer();
+  
+  if (!success) {
+    // Fallback to defaults if server fails
+    console.log('Using fallback default prices');
+    updatePrice();
+  }
+  
+  // Add refresh button for manual updates
+  addRefreshButton();
+}
     // Calculate if a sheet can fit on a side - STRICT checking with dynamic spacing
     function canFitSheet(side, format) {
       const sheetHeight = SHEET_DIMENSIONS[format].height;
@@ -647,8 +735,8 @@
         return false;
       }
       
-      // Load and place 3D model
-      const file = (side === 'right' ? mapR[format] : mapL[format]) + '.glb';
+      // Load and place 3D model - FIXED MAPPING HERE
+      const file = (side === 'left' ? mapL[format] : mapR[format]) + '.glb';
       
       gltfLoader.load('/3dmodels/' + file, g => {
         const s = g.scene;
@@ -657,8 +745,8 @@
         const grp = new THREE.Group();
         grp.add(s);
         
-        // Position the sheet (top-down stacking) - ADJUSTED X POSITIONING
-        const x = side === 'left' ? -0.01 : 0.011; // Moved closer to center
+        // Position the sheet (top-down stacking) - FIXED X POSITIONING
+        const x = side === 'left' ? 0.011 : -0.01; // Swapped the X coordinates
         grp.position.set(x, yPosition, 0.003);
         grp.quaternion.copy(fullModel.quaternion);
         grp.scale.copy(fullModel.scale);
@@ -988,11 +1076,13 @@
         loading.style.display = 'none';
         updateUI();
         updatePrice();
+          initializePricing();
       });
     }
 
-    const mapR = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8', a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8' };
-    const mapL = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a3vertr8', a5landscape: 'a3landsr8', a3vertical: 'a5vertr8', a3landscape: 'a5landsr8' };
+    // FIXED MAPPING - Swapped mapL and mapR assignments
+    const mapL = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8', a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8' };
+    const mapR = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a3vertr8', a5landscape: 'a3landsr8', a3vertical: 'a5vertr8', a3landscape: 'a5landsr8' };
 
     // Sheet format selection
     function bindBtns(btns) {

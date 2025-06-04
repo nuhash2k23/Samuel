@@ -1,15 +1,15 @@
 {
-  "basePrice": 400,
+  "basePrice": 788,
   "materialExtra": {
-    "metal": 60,
-    "glass": 100
+    "metal": 20,
+    "glass": 15
   },
   "sheetPrices": {
     "a4vertical": 100,
-    "a4landscape": 20,
-    "a5vertical": 12,
-    "a5landscape": 14,
-    "a3vertical": 24,
-    "a3landscape": 100
+    "a4landscape": 80,
+    "a5vertical": 200,
+    "a5landscape": 160,
+    "a3vertical": 350,
+    "a3landscape": 280
   }
 }

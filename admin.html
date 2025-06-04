@@ -144,6 +144,15 @@
       background-color: #219653;
     }
     
+    button.back {
+      background-color: var(--gray-dark);
+      margin-right: 10px;
+    }
+    
+    button.back:hover {
+      background-color: #666;
+    }
+    
     .price-item {
       display: flex;
       align-items: center;
@@ -365,6 +374,7 @@
               type="password" 
               id="password" 
               value="${state.password}"
+              placeholder="Enter admin password"
               onkeypress="if(event.key === 'Enter') handleLogin()"
             />
           </div>
@@ -372,6 +382,9 @@
             Login
             ${state.isLoading ? '<span class="loader"></span>' : ''}
           </button>
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="/" style="color: var(--gray-dark); text-decoration: none;">← Back to Configurator</a>
+          </div>
         </div>
       `;
     }
@@ -382,7 +395,10 @@
         <div class="dashboard-container">
           <div class="dashboard-header">
             <h1 style="margin-bottom: 0; text-align: left;">FLOW-FOIL Admin Dashboard</h1>
-            <button class="logout" onclick="handleLogout()">Logout</button>
+            <div>
+              <button class="back" onclick="window.location.href='/'">Back to Configurator</button>
+              <button class="logout" onclick="handleLogout()">Logout</button>
+            </div>
           </div>
           
           <div class="dashboard-content">
@@ -434,6 +450,16 @@
               Save Changes
               ${state.isLoading ? '<span class="loader"></span>' : ''}
             </button>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: var(--gray-light); border-radius: 4px;">
+              <h3 style="margin-bottom: 10px;">Instructions:</h3>
+              <ul style="margin-left: 20px; line-height: 1.6;">
+                <li>Update prices above and click "Save Changes"</li>
+                <li>The configurator will automatically load new prices</li>
+                <li>Users can refresh prices using the ↻ button in the configurator</li>
+                <li>Changes are saved to the server and persist between sessions</li>
+              </ul>
+            </div>
           </div>
         </div>
       `;
