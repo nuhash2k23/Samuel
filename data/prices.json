@@ -1,8 +1,8 @@
 {
-  "basePrice": 788,
+  "basePrice": 5666,
   "materialExtra": {
-    "metal": 20,
-    "glass": 15
+    "metal": 1000,
+    "glass": 1500
   },
   "sheetPrices": {
     "a4vertical": 100,

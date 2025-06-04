@@ -70,7 +70,7 @@ app.post('/api/prices', (req, res) => {
 });
 
 // Authentication middleware (basic for demo)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'flowfoil2024';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'flowfoil2024'; //this is the password for now, you can change
 
 app.post('/api/auth', (req, res) => {
   const { password } = req.body;
@@ -85,4 +85,5 @@ app.post('/api/auth', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
+});  
+
