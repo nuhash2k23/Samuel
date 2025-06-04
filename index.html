@@ -371,14 +371,14 @@
       <!-- Pole Status Display -->
       <div class="pole-status">
         <div class="pole-side">
-          <h3>Left Side (150cm pole) - Available: <span id="left-remaining">150cm</span></h3>
+          <h3>Right Side (150cm pole) - Available: <span id="left-remaining">150cm</span></h3>
           <div class="pole-fill-bar">
             <div id="left-fill-progress" class="pole-fill-progress" style="width: 0%"></div>
             <div id="left-fill-text" class="pole-fill-text">0cm / 150cm</div>
           </div>
         </div>
         <div class="pole-side">
-          <h3>Right Side (150cm pole) - Available: <span id="right-remaining">150cm</span></h3>
+          <h3>Left Side (150cm pole) - Available: <span id="right-remaining">150cm</span></h3>
           <div class="pole-fill-bar">
             <div id="right-fill-progress" class="pole-fill-progress" style="width: 0%"></div>
             <div id="right-fill-text" class="pole-fill-text">0cm / 150cm</div>
@@ -393,12 +393,12 @@
       
       <!-- Sheet queue for each side -->
       <div id="left-queue" class="sheet-queue" style="display: none;">
-        <h3>Left Side Queue:</h3>
+        <h3>Right Side Queue:</h3>
         <div id="left-queue-items"></div>
       </div>
       
       <div id="right-queue" class="sheet-queue" style="display: none;">
-        <h3>Right Side Queue:</h3>
+        <h3>Left Side Queue:</h3>
         <div id="right-queue-items"></div>
       </div>
       
@@ -407,7 +407,7 @@
         <button data-format="a4landscape" data-height="21">A4 Landscape (21cm)</button>
         <button data-format="a5vertical" data-height="21">A5 Vertical (21cm)</button>
         <button data-format="a5landscape" data-height="21">A5 Landscape (15cm)</button>
-        <button data-format="a3vertical" data-height="32">A3 Vertical (42cm)</button>
+        <button data-format="a3vertical" data-height="30">A3 Vertical (42cm)</button>
         <button data-format="a3landscape" data-height="27">A3 Landscape (30cm)</button>
       </div>
       <div id="mobile-sheet-buttons" class="mobile-sheet-buttons">
@@ -415,7 +415,7 @@
         <button data-format="a4landscape" data-height="21">A4 Lndscp</button>
         <button data-format="a5vertical" data-height="21">A5 Vert.</button>
         <button data-format="a5landscape" data-height="21">A5 Lndscp</button>
-        <button data-format="a3vertical" data-height="32">A3 Vert.</button>
+        <button data-format="a3vertical" data-height="30">A3 Vert.</button>
         <button data-format="a3landscape" data-height="27">A3 Lndscp</button>
       </div>
       <h2>Price: <span id="price">117€</span></h2>
@@ -424,8 +424,8 @@
       
       <!-- Side selection buttons -->
       <div class="side-selection" style="margin-bottom: 20px;">
-        <button id="add-left" class="material-option">Add to Left Side</button>
-        <button id="add-right" class="material-option">Add to Right Side</button>
+        <button id="add-left" class="material-option">Add to Right Side</button>
+        <button id="add-right" class="material-option">Add to Left Side</button>
       </div>
       
       <div class="footer">© 2024 FLOW-FOIL Display Solutions. All rights reserved.</div>
@@ -446,11 +446,11 @@
         <button class="mobile-queue-close" id="mobile-queue-close">✕</button>
       </div>
       <div class="mobile-queue-section" id="mobile-queue-left">
-        <h4>Left Side:</h4>
+        <h4>Right Side:</h4>
         <div id="mobile-left-items"></div>
       </div>
       <div class="mobile-queue-section" id="mobile-queue-right">
-        <h4>Right Side:</h4>
+        <h4>Left Side:</h4>
         <div id="mobile-right-items"></div>
       </div>
     </div>
@@ -462,12 +462,12 @@
       <button data-format="a4landscape" data-height="21">A4 H</button>
       <button data-format="a5vertical" data-height="21">A5 V</button>
       <button data-format="a5landscape" data-height="21">A5 H</button>
-      <button data-format="a3vertical" data-height="32">A3 V</button>
+      <button data-format="a3vertical" data-height="30">A3 V</button>
       <button data-format="a3landscape" data-height="27">A3 H</button>
     </div>
     <div class="mobile-side-buttons">
-      <button id="mobile-add-left" disabled>Add to Left</button>
-      <button id="mobile-add-right" disabled>Add to Right</button>
+      <button id="mobile-add-left" disabled>Add to Right</button>
+      <button id="mobile-add-right" disabled>Add to Left</button>
     </div>
   </div>
   
@@ -483,6 +483,12 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { gsap } from 'gsap';
+
+    // Helper function to convert internal side names to display names
+    function getDisplaySideName(internalSide) {
+      // Since the UI shows opposite of internal names: 'left' internal = 'Right Side' in UI
+      return internalSide === 'left' ? 'Right Side' : 'Left Side';
+    }
 
     // Dynamic pole system configuration with improved spacing
     const POLE_HEIGHT = 130; // cm - ACTUAL pole height (safety margin)
@@ -507,7 +513,7 @@
       a4landscape: { height: 21, displayName: 'A4 Landscape (21cm)' },
       a5vertical: { height: 21, displayName: 'A5 Vertical (21cm)' },
       a5landscape: { height: 21, displayName: 'A5 Landscape (15cm)' },
-      a3vertical: { height: 32, displayName: 'A3 Vertical (42cm)' },
+      a3vertical: { height: 30, displayName: 'A3 Vertical (42cm)' },
       a3landscape: { height: 27, displayName: 'A3 Landscape (30cm)' }
     };
 
@@ -722,7 +728,7 @@ async function initializePricing() {
       if (!canFitSheet(side, format)) {
         const spacingNeeded = poleState[side].sheets.length > 0 ? getSpacingForFormat(format) : 0;
         const needed = SHEET_DIMENSIONS[format].height + spacingNeeded;
-        showNotification(`Cannot fit ${SHEET_DIMENSIONS[format].displayName} on ${side} side. Need ${needed}cm, only ${Math.round(poleState[side].remainingHeight)}cm available.`, 4000);
+        showNotification(`Cannot fit ${SHEET_DIMENSIONS[format].displayName} on ${getDisplaySideName(side)}. Need ${needed}cm, only ${Math.round(poleState[side].remainingHeight)}cm available.`, 4000);
         return false;
       }
 
@@ -731,7 +737,7 @@ async function initializePricing() {
       
       // Final safety check - never allow positioning below pole base
       if (yPosition < POLE_BASE_Y) {
-        showNotification(`Sheet would exceed pole height on ${side} side`, 3000);
+        showNotification(`Sheet would exceed pole height on ${getDisplaySideName(side)}`, 3000);
         return false;
       }
       
@@ -772,7 +778,7 @@ async function initializePricing() {
         updatePrice();
         updateEmission();
         
-        showNotification(`${SHEET_DIMENSIONS[format].displayName} added to ${side} side`);
+        showNotification(`${SHEET_DIMENSIONS[format].displayName} added to ${getDisplaySideName(side)}`);
       });
       
       return true;
@@ -802,7 +808,7 @@ async function initializePricing() {
       updatePrice();
       updateEmission();
       
-      showNotification(`Sheet removed from ${side} side`);
+      showNotification(`Sheet removed from ${getDisplaySideName(side)}`);
       return true;
     }
 
@@ -1130,7 +1136,7 @@ async function initializePricing() {
           mobileStatus.textContent = `${SHEET_DIMENSIONS[mobileSelectedFormat].displayName} selected - Choose side`;
         }
       } else {
-        mobileStatus.textContent = `Left: ${Math.round(leftRemaining)}cm | Right: ${Math.round(rightRemaining)}cm available`;
+        mobileStatus.textContent = `${getDisplaySideName('left')}: ${Math.round(leftRemaining)}cm | ${getDisplaySideName('right')}: ${Math.round(rightRemaining)}cm available`;
       }
       
       // Update side buttons
@@ -1140,13 +1146,13 @@ async function initializePricing() {
       if (mobileSelectedFormat) {
         leftBtn.disabled = !canFitSheet('left', mobileSelectedFormat);
         rightBtn.disabled = !canFitSheet('right', mobileSelectedFormat);
-        leftBtn.textContent = `Add to Left (${Math.round(leftRemaining)}cm)`;
-        rightBtn.textContent = `Add to Right (${Math.round(rightRemaining)}cm)`;
+        leftBtn.textContent = `Add to ${getDisplaySideName('left')} (${Math.round(leftRemaining)}cm)`;
+        rightBtn.textContent = `Add to ${getDisplaySideName('right')} (${Math.round(rightRemaining)}cm)`;
       } else {
         leftBtn.disabled = true;
         rightBtn.disabled = true;
-        leftBtn.textContent = 'Add to Left';
-        rightBtn.textContent = 'Add to Right';
+        leftBtn.textContent = `Add to ${getDisplaySideName('left')}`;
+        rightBtn.textContent = `Add to ${getDisplaySideName('right')}`;
       }
       
       // Update mobile queue
