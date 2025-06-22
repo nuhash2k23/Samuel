@@ -1,0 +1,51 @@
+{
+  "basePrice": 90,
+  "materialExtra": {
+    "metal": {
+      "price": 0,
+      "enabled": true
+    },
+    "glass": {
+      "price": 14,
+      "enabled": true
+    }
+  },
+  "sheetFormats": [
+    {
+      "id": "a4landscape",
+      "displayName": "A4 Landscape",
+      "height": 12,
+      "price": 220,
+      "enabled": true,
+      "glbLeft": "a4landslf8",
+      "glbRight": "a4landsr8"
+    },
+    {
+      "id": "a4vertical",
+      "displayName": "A4 Vertical",
+      "height": 20,
+      "price": 30,
+      "enabled": true,
+      "glbLeft": "a4vertlf8",
+      "glbRight": "a4vertr8"
+    },
+    {
+      "id": "a3vertical",
+      "displayName": "A3 Vertical",
+      "height": 24,
+      "price": 34,
+      "enabled": true,
+      "glbLeft": "a3vertlf8",
+      "glbRight": "a3vertr8"
+    },
+    {
+      "id": "a7horizontal",
+      "displayName": "A7 Horizontal ",
+      "height": 21,
+      "price": 50,
+      "enabled": true,
+      "glbLeft": "a7vertl8",
+      "glbRight": "a7landslf8"
+    }
+  ]
+}

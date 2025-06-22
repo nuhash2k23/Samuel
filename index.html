@@ -6,50 +6,58 @@
   <title>FLOW-FOIL Luminous Freestanding Display Kit Configurator</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+    /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; user-select: none; }
     :root { --primary: #000; --secondary: #fff; --accent: #06d6a2; --gray-light: #f5f5f5; --gray: #e0e0e0; --gray-dark: #888; }
     body { background: var(--secondary); overflow: hidden; }
     .container { display: flex; height: 100vh; }
+
+    /* Canvas Container */
     .canvas-container { position: relative; width: 45%; height: 100%; background: linear-gradient(to bottom, #000 0%, #1a1a1a 100%); }
     #canvas { width: 100%; height: 100%; display: block; }
     .loading-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 10; }
     .spinner { border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid var(--accent); border-radius: 50%; width:50px; height:50px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Configurator Panel */
     .configurator { width:55%; padding:40px; overflow-y:auto; background: var(--secondary); }
     h1 { font-size:28px; margin-bottom:8px; }
     .subtitle { font-size:13px; color: var(--gray-dark); margin-bottom:24px; }
     p,h2 { font-size:15px; color: var(--gray-dark); margin-bottom:24px; }
     h2 { font-size:20px; margin-top:32px; }
     .required { color: var(--accent); }
-    .material-options, .hotspot-panel { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px; }
-    .material-option, .hotspot-panel button { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
-    .material-option.active, .hotspot-panel button.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
-    .material-option:hover, .hotspot-panel button:hover { transform: translateY(-2px); border-color: var(--primary); }
-    .material-option.disabled, .hotspot-panel button:disabled { opacity: 0.5; cursor: not-allowed; background: var(--gray-light); }
+
+    /* Material Options & Hotspot Panel Buttons */
+    .material-options, .hotspot-panel, .sheet-format-buttons { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px; }
+    .material-option, .hotspot-panel button, .sheet-format-buttons button { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
+    .material-option.active, .hotspot-panel button.active, .sheet-format-buttons button.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
+    .material-option:hover, .hotspot-panel button:hover, .sheet-format-buttons button:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .material-option.disabled, .hotspot-panel button:disabled, .sheet-format-buttons button:disabled { opacity: 0.5; cursor: not-allowed; background: var(--gray-light); }
+
+    /* Power Control */
     .power-control { margin-bottom:32px; }
     #power-toggle { border:1px solid var(--gray); border-radius:6px; padding:12px 18px; background: var(--secondary); cursor:pointer; transition:all .3s; }
     #power-toggle.active { border-color: var(--accent); background: rgba(0,255,0,0.05); }
     #power-toggle:hover { transform: translateY(-2px); border-color: var(--primary); }
+
+    /* Footer */
     .footer { font-size:12px; color: var(--gray-dark); text-align:center; margin-top:40px; }
-    .mobile-sheet-buttons { display: none; }
-    
+
+    /* Pole Status Display */
     .pole-status {
       background: var(--gray-light);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 24px;
     }
-    
     .pole-side {
       margin-bottom: 12px;
     }
-    
     .pole-side h3 {
       font-size: 14px;
       margin-bottom: 8px;
       color: var(--primary);
     }
-    
     .pole-fill-bar {
       width: 100%;
       height: 20px;
@@ -58,13 +66,11 @@
       overflow: hidden;
       position: relative;
     }
-    
     .pole-fill-progress {
       height: 100%;
       background: linear-gradient(90deg, var(--accent), #04b085);
       transition: width 0.3s ease;
     }
-    
     .pole-fill-text {
       position: absolute;
       top: 50%;
@@ -74,7 +80,8 @@
       font-weight: 600;
       color: var(--primary);
     }
-    
+
+    /* Sheet Queue */
     .sheet-queue {
       background: rgba(6, 214, 162, 0.1);
       border: 1px solid var(--accent);
@@ -82,7 +89,6 @@
       padding: 12px;
       margin-bottom: 16px;
     }
-    
     .queue-item {
       display: flex;
       justify-content: space-between;
@@ -90,11 +96,9 @@
       padding: 6px 0;
       border-bottom: 1px solid rgba(6, 214, 162, 0.2);
     }
-    
     .queue-item:last-child {
       border-bottom: none;
     }
-    
     .queue-item button {
       background: #ff4757;
       color: white;
@@ -104,8 +108,8 @@
       font-size: 10px;
       cursor: pointer;
     }
-    
-    /* Add notification styles */
+
+    /* Notifications and Warnings */
     .notification {
       position: fixed;
       top: 20px;
@@ -119,11 +123,9 @@
       transform: translateX(100%);
       transition: transform 0.3s ease;
     }
-    
     .notification.show {
       transform: translateX(0);
     }
-    
     .warning-message {
       background-color: rgba(255, 193, 7, 0.1);
       border: 1px solid #ffc107;
@@ -134,10 +136,10 @@
       font-size: 13px;
       display: none;
     }
-    
+
     /* Mobile-specific styles */
     .mobile-controls {
-      display: none;
+      display: none; /* Hidden by default */
       position: fixed;
       bottom: 0;
       left: 0;
@@ -148,14 +150,12 @@
       z-index: 100;
       box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
     }
-    
     .mobile-format-selector {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-bottom: 12px;
     }
-    
     .mobile-format-selector button {
       padding: 8px 4px;
       font-size: 12px;
@@ -165,19 +165,16 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
     .mobile-format-selector button.selected {
       background: var(--accent);
       color: white;
       border-color: var(--accent);
     }
-    
     .mobile-side-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    
     .mobile-side-buttons button {
       padding: 16px;
       font-size: 16px;
@@ -189,13 +186,11 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
     .mobile-side-buttons button:disabled {
       background: var(--gray);
       border-color: var(--gray);
       color: var(--gray-dark);
     }
-    
     .mobile-quick-info {
       position: fixed;
       top: 10px;
@@ -203,14 +198,14 @@
       right: 10px;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px); /* For Safari */
       border-radius: 8px;
       padding: 8px 12px;
       font-size: 12px;
       z-index: 90;
-      display: none;
+      display: none; /* Hidden by default */
       text-align: center;
     }
-    
     .mobile-queue-toggle {
       position: fixed;
       top: 60px;
@@ -224,10 +219,9 @@
       font-size: 18px;
       cursor: pointer;
       z-index: 90;
-      display: none;
+      display: none; /* Hidden by default */
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    
     .mobile-queue-overlay {
       position: fixed;
       top: 0;
@@ -236,37 +230,33 @@
       bottom: 0;
       background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px); /* For Safari */
       z-index: 200;
-      display: none;
+      display: none; /* Hidden by default */
       padding: 20px;
       overflow-y: auto;
     }
-    
     .mobile-queue-content {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px); /* For Safari */
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 16px;
       padding: 24px;
       margin-top: 60px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
-    
     .mobile-queue-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-    
     .mobile-queue-header h3 {
       font-size: 18px;
       font-weight: 600;
       color: var(--primary);
     }
-    
     .mobile-queue-close {
       background: var(--accent);
       color: white;
@@ -280,18 +270,15 @@
       align-items: center;
       justify-content: center;
     }
-    
     .mobile-queue-section {
       margin-bottom: 20px;
     }
-    
     .mobile-queue-section h4 {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 12px;
       color: var(--primary);
     }
-    
     .mobile-queue-item {
       display: flex;
       justify-content: space-between;
@@ -303,12 +290,10 @@
       margin-bottom: 8px;
       backdrop-filter: blur(5px);
     }
-    
     .mobile-queue-item span {
       font-size: 14px;
       font-weight: 500;
     }
-    
     .mobile-queue-item button {
       background: #ff4757;
       color: white;
@@ -320,12 +305,10 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
     .mobile-queue-item button:hover {
       background: #ff3838;
       transform: scale(1.05);
     }
-    
     .mobile-queue-empty {
       color: #888;
       font-size: 14px;
@@ -335,15 +318,18 @@
       background: rgba(255, 255, 255, 0.3);
       border-radius: 8px;
     }
-    
+
+    /* Media Queries for Responsiveness */
     @media (max-width:768px) {
       body { overflow-y:auto; padding-bottom: 140px; }
       .container { flex-direction:column; height:auto; }
       .canvas-container { width:100%; height:50vh !important; } /* Reduced from 80vh */
       .configurator { width:100%; height:auto; padding: 20px; margin-top: 12vh; }
+      /* Hide desktop-only elements on mobile */
       .hotspot-panel, .sheet-format-heading, .instructions, .side-selection { display:none; }
       .pole-status, .sheet-queue { display: none; }
-      .mobile-sheet-buttons { display: none; }
+      .mobile-sheet-buttons { display: none; } /* This was already hidden, keeping for clarity */
+      /* Show mobile-specific elements */
       .mobile-controls { display: block; }
       #canvas {height: 60vh !important; background-color: #000000;}
       .mobile-quick-info { display: block; }
@@ -361,8 +347,7 @@
       <h1>FLOW-FOIL Luminous Freestanding Display Kit</h1>
       <h2>Choose base material<span class="required">*</span></h2>
       <div class="material-options">
-        <div class="material-option active" data-material="metal">Metal</div>
-        <div class="material-option" data-material="glass">Glass</div>
+        <!-- Material options will be dynamically rendered -->
       </div>
       <div class="power-control">
         <button id="power-toggle">Power On</button>
@@ -402,25 +387,17 @@
         <div id="right-queue-items"></div>
       </div>
       
-      <div id="hotspot-panel" class="hotspot-panel">
-        <button data-format="a4vertical" data-height="21">A4 Vertical (30cm)</button>
-        <button data-format="a4landscape" data-height="21">A4 Landscape (21cm)</button>
-        <button data-format="a5vertical" data-height="21">A5 Vertical (21cm)</button>
-        <button data-format="a5landscape" data-height="21">A5 Landscape (15cm)</button>
-        <button data-format="a3vertical" data-height="30">A3 Vertical (42cm)</button>
-        <button data-format="a3landscape" data-height="27">A3 Landscape (30cm)</button>
+      <div id="hotspot-panel" class="hotspot-panel sheet-format-buttons">
+        <!-- Sheet format buttons will be dynamically rendered here -->
       </div>
+      
       <div id="mobile-sheet-buttons" class="mobile-sheet-buttons">
-        <button data-format="a4vertical" data-height="21">A4 Vert.</button>
-        <button data-format="a4landscape" data-height="21">A4 Lndscp</button>
-        <button data-format="a5vertical" data-height="21">A5 Vert.</button>
-        <button data-format="a5landscape" data-height="21">A5 Lndscp</button>
-        <button data-format="a3vertical" data-height="30">A3 Vert.</button>
-        <button data-format="a3landscape" data-height="27">A3 Lndscp</button>
+        <!-- Mobile sheet format buttons will be dynamically rendered here if needed separately, but using the same structure as above is better -->
       </div>
+
       <h2>Price: <span id="price">117€</span></h2>
       <p class="subtitle">Modular luminous floor display ideal for travel agencies, trade fairs, events, real estate agencies, shops, conference rooms.</p>
-      <p class="instructions">Click "Add to Left" or "Add to Right" to place sheets. System automatically calculates optimal positioning based on sheet dimensions and available pole space (150cm display height, 0.2cm spacing for A3 vertical, 0.5cm for others, 0.81cm for A5 landscape).</p>
+      <p class="instructions">Click "Add to Right Side" or "Add to Left Side" to place sheets. System automatically calculates optimal positioning based on sheet dimensions and available pole space (150cm display height, 0.2cm spacing for A3 vertical, 0.5cm for others, 0.81cm for A5 landscape).</p>
       
       <!-- Side selection buttons -->
       <div class="side-selection" style="margin-bottom: 20px;">
@@ -458,12 +435,7 @@
   
   <div class="mobile-controls" id="mobile-controls">
     <div class="mobile-format-selector" id="mobile-format-selector">
-      <button data-format="a4vertical" data-height="21">A4 V</button>
-      <button data-format="a4landscape" data-height="21">A4 H</button>
-      <button data-format="a5vertical" data-height="21">A5 V</button>
-      <button data-format="a5landscape" data-height="21">A5 H</button>
-      <button data-format="a3vertical" data-height="30">A3 V</button>
-      <button data-format="a3landscape" data-height="27">A3 H</button>
+      <!-- Mobile sheet format buttons will be dynamically rendered here -->
     </div>
     <div class="mobile-side-buttons">
       <button id="mobile-add-left" disabled>Add to Right</button>
@@ -475,7 +447,7 @@
   <div id="notification" class="notification">
     Sheet added successfully
   </div>
-  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.152.2/build/three.module.js","three/addons/":"https://unpkg.com/three@0.152.2/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"}}</script>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.11.5/index.js"}}</script>
   <script type="module">
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -494,28 +466,23 @@
     const POLE_HEIGHT = 130; // cm - ACTUAL pole height (safety margin)
     const DISPLAY_HEIGHT = 150; // cm - What we show in UI
     const MIN_SPACING = 0.5; // cm - base spacing
-    const A3_VERTICAL_SPACING = -0.82; // cm - REDUCED spacing for A3 vertical sheets
-    const A5_LANDSCAPE_SPACING = 0.81; // cm - 1.62x spacing for A5 landscape
+    const A3_VERTICAL_SPACING = -0.82; // cm - REDUCED spacing for A3 vertical sheets (can be adjusted)
+    const A5_LANDSCAPE_SPACING = 0.81; // cm - 1.62x spacing for A5 landscape (can be adjusted)
     const POLE_BASE_Y = -1.8; // 3D scene Y coordinate for pole base (adjusted to match actual pole)
     const POLE_TOP_Y = 0.6; // 3D scene Y coordinate for pole top (more conservative limit)
     const CM_TO_SCENE_RATIO = (POLE_TOP_Y - POLE_BASE_Y) / POLE_HEIGHT; // conversion factor
 
     // Get spacing for specific format - IMPROVED with A3 vertical handling
-    function getSpacingForFormat(format) {
-      if (format === 'a5landscape') return A5_LANDSCAPE_SPACING;
-      if (format === 'a3vertical') return A3_VERTICAL_SPACING; // Reduced spacing for A3 vertical
+    function getSpacingForFormat(formatId) {
+      // Note: This function would need to be updated to look up spacing based on dynamic config
+      // For now, it retains the hardcoded logic but ideally it would come from sheetFormats config
+      if (formatId === 'a5landscape') return A5_LANDSCAPE_SPACING;
+      if (formatId === 'a3vertical') return A3_VERTICAL_SPACING; // Reduced spacing for A3 vertical
       return MIN_SPACING;
     }
 
-    // Sheet dimensions in cm (height when placed)
-    const SHEET_DIMENSIONS = {
-      a4vertical: { height: 21, displayName: 'A4 Vertical (30cm)' },
-      a4landscape: { height: 21, displayName: 'A4 Landscape (21cm)' },
-      a5vertical: { height: 21, displayName: 'A5 Vertical (21cm)' },
-      a5landscape: { height: 21, displayName: 'A5 Landscape (15cm)' },
-      a3vertical: { height: 30, displayName: 'A3 Vertical (42cm)' },
-      a3landscape: { height: 27, displayName: 'A3 Landscape (30cm)' }
-    };
+    // Sheet dimensions will be populated dynamically from config
+    let SHEET_DIMENSIONS = {}; // This will now be populated from config.json
 
     // Dynamic pole state management
     const poleState = {
@@ -524,13 +491,13 @@
     };
 
     let selectedFormat = null;
-    let pendingSide = null;
+    let pendingSide = null; // Unused, can be removed
 
     const isMobile = window.innerWidth <= 768;
     const canvas = document.getElementById('canvas');
     const loading = document.querySelector('.loading-overlay');
     const startZ = isMobile ? -3.3 : -2.73;
-        const startY = isMobile ? .5 : 0.75;
+    const startY = isMobile ? .5 : 0.75;
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(isMobile ? 1.5 : window.devicePixelRatio);
@@ -580,134 +547,127 @@
     const modelParts = {};
     let powerOn = false;
 
-    // Pricing system
-  let basePrice = 100;
-let materialExtra = { metal: 0, glass: 10 };
-let sheetPrices = {
-  a4vertical: 15,
-  a4landscape: 17,
-  a5vertical: 12,
-  a5landscape: 14,
-  a3vertical: 21,
-  a3landscape: 27,
-};
+    // Pricing and configuration system (now loaded from API)
+    let appConfig = {
+      basePrice: 100,
+      materialExtra: {
+        metal: { price: 0, enabled: true },
+        glass: { price: 10, enabled: true }
+      },
+      sheetFormats: [] // Will be populated by API
+    };
 
-// API endpoints
-const API_ENDPOINTS = {
-  PRICES: '/api/prices'
-};
+    // API endpoint for configuration
+    const API_ENDPOINTS = {
+      CONFIG: '/api/config'
+    };
 
-// Load prices from server
-async function loadPricesFromServer() {
-  try {
-    console.log('Loading prices from server...');
-    const response = await fetch(API_ENDPOINTS.PRICES);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Load configuration from server
+    async function loadConfigFromServer() {
+      try {
+        console.log('Loading configuration from server...');
+        const response = await fetch(API_ENDPOINTS.CONFIG);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const serverConfig = await response.json();
+        
+        // Update local configuration variables
+        appConfig = serverConfig;
+
+        // Populate SHEET_DIMENSIONS dynamically
+        SHEET_DIMENSIONS = {};
+        appConfig.sheetFormats.forEach(s => {
+          SHEET_DIMENSIONS[s.id] = { 
+            height: s.height, 
+            displayName: s.displayName, 
+            glbLeft: s.glbLeft, 
+            glbRight: s.glbRight 
+          };
+        });
+
+        // Update the displayed price and UI
+        updatePrice();
+        updateUI(); // This will re-render material and sheet buttons
+
+        console.log('Configuration loaded successfully:', appConfig);
+        showNotification('Configuration updated from server');
+        
+        return true;
+      } catch (error) {
+        console.error('Error loading configuration from server:', error);
+        showNotification('Using default configuration - server unavailable', 4000);
+        return false;
+      }
     }
-    
-    const serverPrices = await response.json();
-    
-    // Update local pricing variables
-    basePrice = serverPrices.basePrice || basePrice;
-    materialExtra = serverPrices.materialExtra || materialExtra;
-    sheetPrices = serverPrices.sheetPrices || sheetPrices;
-    
-    // Update the displayed price
-    updatePrice();
-    
-    console.log('Prices loaded successfully:', serverPrices);
-    showNotification('Prices updated from server');
-    
-    return true;
-  } catch (error) {
-    console.error('Error loading prices from server:', error);
-    showNotification('Using default prices - server unavailable', 4000);
-    return false;
-  }
-}
 
-// Add refresh button functionality
-function addRefreshButton() {
-  // Find a good place to add the refresh button
-  const configurator = document.querySelector('.configurator');
-  const priceElement = document.getElementById('price');
-  
-  if (priceElement && !document.getElementById('refresh-prices')) {
-    // Create refresh button
-    const refreshBtn = document.createElement('button');
-    refreshBtn.id = 'refresh-prices';
-    refreshBtn.innerHTML = '↻ Refresh Prices';
-    refreshBtn.style.cssText = `
-      margin-left: 10px;
-      padding: 5px 10px;
-      font-size: 12px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      vertical-align: middle;
-    `;
-    
-    refreshBtn.addEventListener('click', async () => {
-      refreshBtn.disabled = true;
-      refreshBtn.innerHTML = '↻ Loading...';
-      
-      await loadPricesFromServer();
-      
-      refreshBtn.disabled = false;
-      refreshBtn.innerHTML = '↻ Refresh Prices';
-    });
-    
-    // Add button next to price
-    priceElement.parentNode.appendChild(refreshBtn);
-  }
-}
+    // Add refresh button functionality
+    function addRefreshButton() {
+      const priceElement = document.getElementById('price');
+      if (priceElement && !document.getElementById('refresh-config')) {
+        const refreshBtn = document.createElement('button');
+        refreshBtn.id = 'refresh-config';
+        refreshBtn.innerHTML = '↻ Refresh Config';
+        refreshBtn.style.cssText = `
+          margin-left: 10px;
+          padding: 5px 10px;
+          font-size: 12px;
+          background: var(--accent);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          vertical-align: middle;
+        `;
+        
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          refreshBtn.innerHTML = '↻ Loading...';
+          await loadConfigFromServer();
+          refreshBtn.disabled = false;
+          refreshBtn.innerHTML = '↻ Refresh Config';
+        });
+        priceElement.parentNode.appendChild(refreshBtn);
+      }
+    }
 
-// Initialize prices when page loads
-async function initializePricing() {
-  // Try to load from server first
-  const success = await loadPricesFromServer();
-  
-  if (!success) {
-    // Fallback to defaults if server fails
-    console.log('Using fallback default prices');
-    updatePrice();
-  }
-  
-  // Add refresh button for manual updates
-  addRefreshButton();
-}
+    // Initialize configuration when page loads
+    async function initializeConfig() {
+      await loadConfigFromServer();
+      addRefreshButton();
+    }
+
     // Calculate if a sheet can fit on a side - STRICT checking with dynamic spacing
-    function canFitSheet(side, format) {
-      const sheetHeight = SHEET_DIMENSIONS[format].height;
-      const spacingNeeded = poleState[side].sheets.length > 0 ? getSpacingForFormat(format) : 0;
+    function canFitSheet(side, formatId) {
+      const sheet = appConfig.sheetFormats.find(s => s.id === formatId);
+      if (!sheet || !sheet.enabled) return false; // Cannot fit if format doesn't exist or is disabled
+
+      const sheetHeight = sheet.height;
+      const spacingNeeded = poleState[side].sheets.length > 0 ? getSpacingForFormat(formatId) : 0;
       const totalNeeded = sheetHeight + spacingNeeded;
       
-      // Use real pole height for validation
       const hasEnoughSpace = poleState[side].remainingHeight >= totalNeeded;
       
-      console.log(`Can fit ${format} on ${side}? Need: ${totalNeeded}cm (${sheetHeight}cm + ${spacingNeeded}cm spacing), Available: ${poleState[side].remainingHeight}cm, Real pole: ${POLE_HEIGHT}cm, Result: ${hasEnoughSpace}`);
+      console.log(`Can fit ${formatId} on ${side}? Need: ${totalNeeded}cm (${sheetHeight}cm + ${spacingNeeded}cm spacing), Available: ${poleState[side].remainingHeight}cm, Real pole: ${POLE_HEIGHT}cm, Result: ${hasEnoughSpace}`);
       
       return hasEnoughSpace;
     }
 
-    // Calculate Y position for a new sheet (stack from top down) - FIXED spacing logic
-    function calculateSheetPosition(side, format) {
+    // Calculate Y position for a new sheet (stack from top down)
+    function calculateSheetPosition(side, formatId) {
       const sheets = poleState[side].sheets;
       let cumulativeHeight = 0;
       
       // Calculate cumulative height from existing sheets
       sheets.forEach((sheet) => {
         cumulativeHeight += sheet.height;
-        // Add spacing after each existing sheet
-        cumulativeHeight += sheet.spacing || MIN_SPACING;
+        cumulativeHeight += sheet.spacing; // Use stored spacing for consistency
       });
       
       // Add current sheet height to total
-      const currentSheetHeight = SHEET_DIMENSIONS[format].height;
+      const currentSheetHeight = appConfig.sheetFormats.find(s => s.id === formatId).height;
       const totalHeight = cumulativeHeight + currentSheetHeight;
       
       // Convert to 3D scene coordinates (from top of pole downward)
@@ -717,23 +677,29 @@ async function initializePricing() {
       const minAllowedY = POLE_BASE_Y;
       const finalY = Math.max(yPosition, minAllowedY);
       
-      console.log(`Positioning ${format} on ${side}: Cumulative: ${cumulativeHeight}cm, Total: ${totalHeight}cm, Y: ${yPosition}, Final Y: ${finalY}, Next spacing: ${getSpacingForFormat(format)}cm`);
+      console.log(`Positioning ${formatId} on ${side}: Cumulative: ${cumulativeHeight}cm, Total: ${totalHeight}cm, Y: ${yPosition}, Final Y: ${finalY}, Next spacing: ${getSpacingForFormat(formatId)}cm`);
       
       return finalY;
     }
 
-    // Add sheet to pole side - IMPROVED with strict validation
-    function addSheetToPole(side, format) {
-      // Double-check space before proceeding
-      if (!canFitSheet(side, format)) {
-        const spacingNeeded = poleState[side].sheets.length > 0 ? getSpacingForFormat(format) : 0;
-        const needed = SHEET_DIMENSIONS[format].height + spacingNeeded;
-        showNotification(`Cannot fit ${SHEET_DIMENSIONS[format].displayName} on ${getDisplaySideName(side)}. Need ${needed}cm, only ${Math.round(poleState[side].remainingHeight)}cm available.`, 4000);
+    // Add sheet to pole side - IMPROVED with strict validation and dynamic GLB
+    function addSheetToPole(side, formatId) {
+      const sheetData = appConfig.sheetFormats.find(s => s.id === formatId);
+      if (!sheetData || !sheetData.enabled) {
+        showNotification(`Sheet format ${formatId} is not available or disabled.`);
         return false;
       }
 
-      const sheetHeight = SHEET_DIMENSIONS[format].height;
-      const yPosition = calculateSheetPosition(side, format);
+      // Double-check space before proceeding
+      if (!canFitSheet(side, formatId)) {
+        const spacingNeeded = poleState[side].sheets.length > 0 ? getSpacingForFormat(formatId) : 0;
+        const needed = sheetData.height + spacingNeeded;
+        showNotification(`Cannot fit ${sheetData.displayName} on ${getDisplaySideName(side)}. Need ${needed}cm, only ${Math.round(poleState[side].remainingHeight)}cm available.`, 4000);
+        return false;
+      }
+
+      const sheetHeight = sheetData.height;
+      const yPosition = calculateSheetPosition(side, formatId);
       
       // Final safety check - never allow positioning below pole base
       if (yPosition < POLE_BASE_Y) {
@@ -741,18 +707,18 @@ async function initializePricing() {
         return false;
       }
       
-      // Load and place 3D model - FIXED MAPPING HERE
-      const file = (side === 'left' ? mapL[format] : mapR[format]) + '.glb';
+      // Load and place 3D model - Use GLB from config
+      const glbFileName = (side === 'left' ? sheetData.glbLeft : sheetData.glbRight) + '.glb';
       
-      gltfLoader.load('/3dmodels/' + file, g => {
+      gltfLoader.load(glbFileName, g => { 
         const s = g.scene;
         const bb = new THREE.Box3().setFromObject(s);
-        s.position.y -= bb.min.y;
+        s.position.y -= bb.min.y; // Adjust model origin to its base
         const grp = new THREE.Group();
         grp.add(s);
         
-        // Position the sheet (top-down stacking) - FIXED X POSITIONING
-        const x = side === 'left' ? 0.011 : -0.01; // Swapped the X coordinates
+        // Position the sheet (top-down stacking)
+        const x = side === 'left' ? 0.011 : -0.01; // X positions are consistent
         grp.position.set(x, yPosition, 0.003);
         grp.quaternion.copy(fullModel.quaternion);
         grp.scale.copy(fullModel.scale);
@@ -760,16 +726,16 @@ async function initializePricing() {
         scene.add(grp);
         
         // Update pole state with spacing information
-        const sheetData = {
-          format: format,
+        const newSheetInstance = {
+          format: formatId,
           height: sheetHeight,
           yPosition: yPosition,
           group: grp,
-          spacing: getSpacingForFormat(format), // Store spacing for this format
-          id: Date.now() + Math.random()
+          spacing: getSpacingForFormat(formatId), // Store spacing for this format instance
+          id: Date.now() + Math.random() // Unique ID for removal
         };
         
-        poleState[side].sheets.push(sheetData);
+        poleState[side].sheets.push(newSheetInstance);
         
         // Recalculate totals properly
         updateSideTotals(side);
@@ -778,7 +744,10 @@ async function initializePricing() {
         updatePrice();
         updateEmission();
         
-        showNotification(`${SHEET_DIMENSIONS[format].displayName} added to ${getDisplaySideName(side)}`);
+        showNotification(`${sheetData.displayName} added to ${getDisplaySideName(side)}`);
+      }, undefined, (error) => {
+        console.error('Error loading GLB model:', glbFileName, error);
+        showNotification(`Failed to load 3D model for ${sheetData.displayName}.`, 4000);
       });
       
       return true;
@@ -812,7 +781,7 @@ async function initializePricing() {
       return true;
     }
 
-    // Reposition all sheets on a side (after removal) - FIXED spacing logic for top-down
+    // Reposition all sheets on a side (after removal)
     function repositionAllSheets(side) {
       const sheets = poleState[side].sheets;
       let cumulativeHeight = 0;
@@ -829,16 +798,16 @@ async function initializePricing() {
         const finalY = Math.max(yPosition, minY);
         
         sheet.yPosition = finalY;
-        sheet.group.position.y = finalY;
+        if (sheet.group) sheet.group.position.y = finalY; // Ensure group exists
         
         // Add spacing after this sheet (except for the last one)
         if (index < sheets.length - 1) {
-          cumulativeHeight += sheet.spacing || MIN_SPACING;
+          cumulativeHeight += sheet.spacing;
         }
       });
     }
 
-    // Update side totals after changes - FIXED spacing logic
+    // Update side totals after changes
     function updateSideTotals(side) {
       const sideData = poleState[side];
       sideData.totalHeight = 0;
@@ -847,7 +816,7 @@ async function initializePricing() {
         sideData.totalHeight += sheet.height;
         // Add spacing after each sheet except the last
         if (index < sideData.sheets.length - 1) {
-          sideData.totalHeight += sheet.spacing || MIN_SPACING;
+          sideData.totalHeight += sheet.spacing;
         }
       });
       
@@ -858,9 +827,45 @@ async function initializePricing() {
 
     // Update UI elements (show display height, calculate with real height)
     function updateUI() {
+      // Render material options
+      const materialOptionsContainer = document.querySelector('.material-options');
+      materialOptionsContainer.innerHTML = '';
+      Object.entries(appConfig.materialExtra).forEach(([materialId, data]) => {
+        if (data.enabled) {
+          const div = document.createElement('div');
+          // Check if any material is active, if not, set the first enabled one as active
+          const currentActiveMaterial = document.querySelector('.material-option.active[data-material]');
+          if (!currentActiveMaterial || currentActiveMaterial.dataset.material === materialId) {
+              div.className = `material-option active`; // Keep active if it was, or if no active one
+          } else {
+              div.className = `material-option`;
+          }
+          div.dataset.material = materialId;
+          div.textContent = materialId.charAt(0).toUpperCase() + materialId.slice(1); // Capitalize first letter
+          materialOptionsContainer.appendChild(div);
+        }
+      });
+      // Re-bind event listeners for new material options
+      document.querySelectorAll('.material-option[data-material]').forEach(el => el.addEventListener('click', handleMaterialOptionClick));
+
+
+      // Render sheet format buttons (desktop)
+      const hotspotPanel = document.getElementById('hotspot-panel');
+      hotspotPanel.innerHTML = '';
+      appConfig.sheetFormats.forEach(sheet => {
+        if (sheet.enabled) {
+          const button = document.createElement('button');
+          button.dataset.format = sheet.id;
+          button.dataset.height = sheet.height; // Keep for legacy, but data comes from config
+          button.textContent = sheet.displayName;
+          hotspotPanel.appendChild(button);
+        }
+      });
+      // Re-bind event listeners for new sheet format buttons
+      bindBtns(document.querySelectorAll('#hotspot-panel button'));
+
       // Update pole fill bars
       ['left', 'right'].forEach(side => {
-        // Use real height for calculations but display height for UI
         const realFillPercent = (poleState[side].totalHeight / POLE_HEIGHT) * 100;
         const displayFillPercent = (poleState[side].totalHeight / DISPLAY_HEIGHT) * 100;
         
@@ -868,10 +873,9 @@ async function initializePricing() {
         const fillText = document.getElementById(`${side}-fill-text`);
         const remainingText = document.getElementById(`${side}-remaining`);
         
-        if (progressBar) progressBar.style.width = displayFillPercent + '%'; // Show based on 150cm
-        if (fillText) fillText.textContent = `${Math.round(poleState[side].totalHeight)}cm / 150cm`; // Show 150cm
+        if (progressBar) progressBar.style.width = displayFillPercent + '%';
+        if (fillText) fillText.textContent = `${Math.round(poleState[side].totalHeight)}cm / 150cm`;
         if (remainingText) {
-          // Show remaining based on display height for UI
           const displayRemaining = DISPLAY_HEIGHT - poleState[side].totalHeight;
           remainingText.textContent = `${Math.round(Math.max(0, displayRemaining))}cm`;
         }
@@ -880,7 +884,7 @@ async function initializePricing() {
         updateQueueDisplay(side);
       });
       
-      // Update button states based on available space (use real height)
+      // Update button states based on available space
       updateButtonStates();
       
       // Update mobile UI
@@ -892,6 +896,8 @@ async function initializePricing() {
       const queueElement = document.getElementById(`${side}-queue`);
       const queueItems = document.getElementById(`${side}-queue-items`);
       
+      if (!queueItems) return; // Ensure the element exists
+
       if (poleState[side].sheets.length === 0) {
         queueElement.style.display = 'none';
         return;
@@ -901,11 +907,14 @@ async function initializePricing() {
       queueItems.innerHTML = '';
       
       poleState[side].sheets.forEach((sheet, index) => {
+        const sheetFormat = appConfig.sheetFormats.find(s => s.id === sheet.format);
+        if (!sheetFormat) return; // Skip if format no longer exists
+
         const queueItem = document.createElement('div');
         queueItem.className = 'queue-item';
         
         const span = document.createElement('span');
-        span.textContent = SHEET_DIMENSIONS[sheet.format].displayName;
+        span.textContent = sheetFormat.displayName;
         
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
@@ -922,65 +931,84 @@ async function initializePricing() {
       const buttons = document.querySelectorAll('[data-format]');
       
       buttons.forEach(button => {
-        const format = button.dataset.format;
-        const leftCanFit = canFitSheet('left', format);
-        const rightCanFit = canFitSheet('right', format);
+        const formatId = button.dataset.format;
+        const sheet = appConfig.sheetFormats.find(s => s.id === formatId);
         
-        // Update button appearance based on space availability
+        if (!sheet || !sheet.enabled) { // Disable if not found or not enabled
+          button.disabled = true;
+          button.style.opacity = '0.3';
+          button.classList.remove('active'); // Ensure not active if disabled
+          if (selectedFormat === formatId) selectedFormat = null; // Deselect if currently selected
+          return;
+        }
+
+        const leftCanFit = canFitSheet('left', formatId);
+        const rightCanFit = canFitSheet('right', formatId);
+        
         if (!leftCanFit && !rightCanFit) {
           button.disabled = true;
           button.style.opacity = '0.3';
+          button.classList.remove('active');
+          if (selectedFormat === formatId) selectedFormat = null;
         } else {
           button.disabled = false;
           button.style.opacity = '1';
         }
-        
-        // Show warning if no space
-        const warning = document.getElementById('space-warning');
-        const anyCanFit = Array.from(buttons).some(btn => {
-          const fmt = btn.dataset.format;
-          return canFitSheet('left', fmt) || canFitSheet('right', fmt);
-        });
-        warning.style.display = anyCanFit ? 'none' : 'block';
       });
+      
+      // Show warning if no available sheet formats can fit on either pole
+      const warning = document.getElementById('space-warning');
+      const anyCanFit = appConfig.sheetFormats.some(sheet => 
+        sheet.enabled && (canFitSheet('left', sheet.id) || canFitSheet('right', sheet.id))
+      );
+      warning.style.display = anyCanFit ? 'none' : 'block';
     }
 
     // Update price calculation
     function updatePrice() {
-      let p = basePrice;
-      const matElement = document.querySelector('.material-option.active');
-      if (matElement) {
-        const mat = matElement.dataset.material;
-        p += materialExtra[mat];
-        
-        let sheetTotal = 0;
-        ['left', 'right'].forEach(side => {
-          poleState[side].sheets.forEach(sheet => {
-            sheetTotal += sheetPrices[sheet.format] || 0;
-          });
-        });
-        
-        p += sheetTotal;
-        document.getElementById('price').textContent = p + '€';
+      let p = appConfig.basePrice;
+      
+      const activeMaterialElement = document.querySelector('.material-option.active[data-material]');
+      if (activeMaterialElement) {
+        const materialId = activeMaterialElement.dataset.material;
+        const materialData = appConfig.materialExtra[materialId];
+        if (materialData && materialData.enabled) {
+          p += materialData.price;
+        }
       }
+      
+      let sheetTotal = 0;
+      ['left', 'right'].forEach(side => {
+        poleState[side].sheets.forEach(sheetInstance => {
+          const sheetFormat = appConfig.sheetFormats.find(s => s.id === sheetInstance.format);
+          if (sheetFormat && sheetFormat.enabled) {
+            sheetTotal += sheetFormat.price || 0;
+          }
+        });
+      });
+      
+      p += sheetTotal;
+      document.getElementById('price').textContent = p + '€';
     }
 
     // Update emission for power state
     function updateEmission() {
       ['left', 'right'].forEach(side => {
         poleState[side].sheets.forEach(sheet => {
-          sheet.group.traverse(o => {
-            if (o.isMesh) {
-              if (powerOn) {
-                o.material.emissive = new THREE.Color(0xffffff);
-                o.material.emissiveIntensity = 0.75;
-                o.material.emissiveMap = o.material.map;
-              } else {
-                o.material.emissiveIntensity = 0;
+          if (sheet.group) { // Ensure the group (3D model) exists
+            sheet.group.traverse(o => {
+              if (o.isMesh) {
+                if (powerOn) {
+                  o.material.emissive = new THREE.Color(0xffffff);
+                  o.material.emissiveIntensity = 0.75;
+                  o.material.emissiveMap = o.material.map;
+                } else {
+                  o.material.emissiveIntensity = 0;
+                }
+                o.material.needsUpdate = true;
               }
-              o.material.needsUpdate = true;
-            }
-          });
+            });
+          }
         });
       });
     }
@@ -988,12 +1016,14 @@ async function initializePricing() {
     // Show notification
     function showNotification(message, duration = 3000) {
       const notification = document.getElementById('notification');
-      notification.textContent = message;
-      notification.classList.add('show');
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, duration);
+      if (notification) { // Ensure notification element exists
+        notification.textContent = message;
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+          notification.classList.remove('show');
+        }, duration);
+      }
     }
 
     // Power toggle
@@ -1005,35 +1035,56 @@ async function initializePricing() {
       updateEmission();
     });
 
-    // Material selection
-    document.querySelectorAll('.material-option').forEach(el => el.addEventListener('click', () => {
-      if (el.textContent.includes('Add to')) return; // Skip side selection buttons
-      
-      document.querySelectorAll('.material-option').forEach(b => {
-        if (!b.textContent.includes('Add to')) {
-          b.classList.toggle('active', b === el);
-        }
-      });
-      
-      const m = el.dataset.material;
-      
-      if (m === 'metal') {
-        if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
-        modelParts.metalbase.visible = true;
-        if (modelParts.glassbase) modelParts.glassbase.visible = false;
-      } else {
-        modelParts.metalbase.visible = false;
-        if (glassBaseMesh) scene.remove(glassBaseMesh);
-        gltfLoader.load('3dmodels/glassbase.glb', g => {
-          glassBaseMesh = g.scene;
-          ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
-          scene.add(glassBaseMesh);
-        });
-      }
-      updatePrice();
-    }));
+    // Material selection handler
+    function handleMaterialOptionClick(event) {
+        const el = event.currentTarget;
+        if (el.textContent.includes('Add to')) return; // Skip side selection buttons
 
-    // Side selection
+        document.querySelectorAll('.material-option[data-material]').forEach(b => {
+            b.classList.toggle('active', b === el);
+        });
+        
+        const materialId = el.dataset.material;
+        
+        // Ensure only enabled materials can be selected
+        if (!appConfig.materialExtra[materialId] || !appConfig.materialExtra[materialId].enabled) {
+            showNotification(`Material ${materialId} is not enabled.`);
+            el.classList.remove('active'); // Remove active if clicked on disabled
+            // Find first enabled material and set it active
+            const firstEnabled = Object.keys(appConfig.materialExtra).find(key => appConfig.materialExtra[key].enabled);
+            if(firstEnabled) {
+                document.querySelector(`.material-option[data-material="${firstEnabled}"]`).classList.add('active');
+            }
+            return;
+        }
+
+        if (materialId === 'metal') {
+            if (glassBaseMesh) { scene.remove(glassBaseMesh); glassBaseMesh = null; }
+            if (modelParts.metalbase) modelParts.metalbase.visible = true;
+            if (modelParts.glassbase) modelParts.glassbase.visible = false;
+        } else if (materialId === 'glass') {
+            if (modelParts.metalbase) modelParts.metalbase.visible = false;
+            // Only load glassbase if it's not already in the scene and is enabled
+            if (!glassBaseMesh && appConfig.materialExtra.glass.enabled) {
+                gltfLoader.load('glassbase.glb', g => { 
+                    glassBaseMesh = g.scene;
+                    ['position','quaternion','scale'].forEach(k => glassBaseMesh[k].copy(fullModel[k]));
+                    scene.add(glassBaseMesh);
+                }, undefined, (error) => {
+                    console.error('Error loading glassbase GLB:', error);
+                    showNotification('Failed to load glass base model.', 4000);
+                });
+            } else if (glassBaseMesh) {
+                glassBaseMesh.visible = true;
+            }
+        }
+        updatePrice();
+    }
+    // Bind initial material options (will be re-bound after config load in updateUI)
+    document.querySelectorAll('.material-option[data-material]').forEach(el => el.addEventListener('click', handleMaterialOptionClick));
+
+
+    // Side selection for adding sheets
     document.getElementById('add-left').addEventListener('click', () => {
       if (selectedFormat) {
         addSheetToPole('left', selectedFormat);
@@ -1058,14 +1109,18 @@ async function initializePricing() {
     const gltfLoader = new GLTFLoader().setDRACOLoader(draco);
     const rgbeLoader = new RGBELoader();
 
-    rgbeLoader.load('3dmodels/docklands_02_1k.hdr', hdr => {
+    // Set base path for all loaders
+    rgbeLoader.setPath('3dmodels/');
+    gltfLoader.setPath('3dmodels/');
+
+    rgbeLoader.load('docklands_02_1k.hdr', hdr => { 
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = hdr;
       loadHolder();
     });
 
     function loadHolder() {
-      gltfLoader.load('/3dmodels/adsholder.glb', gltf => {
+      gltfLoader.load('adsholder.glb', gltf => { 
         fullModel = gltf.scene;
         fullModel.position.set(0, -2, 0);
         fullModel.traverse(o => {
@@ -1075,43 +1130,51 @@ async function initializePricing() {
             if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
           }
         });
-        modelParts.metalbase.visible = true;
-        if (modelParts.glassbase) modelParts.glassbase.visible = false;
+        
+        // Set initial visibility based on config. If metal is enabled and selected by default
+        if (appConfig.materialExtra.metal && appConfig.materialExtra.metal.enabled) {
+            if (modelParts.metalbase) modelParts.metalbase.visible = true;
+            if (modelParts.glassbase) modelParts.glassbase.visible = false;
+        } else if (appConfig.materialExtra.glass && appConfig.materialExtra.glass.enabled) {
+            // If metal is not enabled, but glass is, try to load glassbase
+            document.querySelector('.material-option[data-material="metal"]').classList.remove('active');
+            document.querySelector('.material-option[data-material="glass"]').classList.add('active');
+            handleMaterialOptionClick({ currentTarget: document.querySelector('.material-option[data-material="glass"]')});
+        }
+        
         scene.add(fullModel);
 
         loading.style.display = 'none';
-        updateUI();
+        updateUI(); // Initial UI update after model load
         updatePrice();
-          initializePricing();
       });
     }
 
-    // FIXED MAPPING - Swapped mapL and mapR assignments
-    const mapL = { a4vertical: 'a4vertlf8', a4landscape: 'a4landslf8', a5vertical: 'a3vertlf8', a5landscape: 'a3landslf8', a3vertical: 'a5vertlf8', a3landscape: 'a5landslf8' };
-    const mapR = { a4vertical: 'a4vertr8', a4landscape: 'a4landsr8', a5vertical: 'a3vertr8', a5landscape: 'a3landsr8', a3vertical: 'a5vertr8', a3landscape: 'a5landsr8' };
-
-    // Sheet format selection
-    function bindBtns(btns) {
-      btns.forEach(b => b.addEventListener('click', () => {
-        // Toggle selection
-        const wasActive = b.classList.contains('active');
-        document.querySelectorAll('[data-format]').forEach(btn => btn.classList.remove('active'));
-        
-        if (!wasActive) {
-          b.classList.add('active');
-          selectedFormat = b.dataset.format;
-          showNotification(`${SHEET_DIMENSIONS[selectedFormat].displayName} selected. Choose a side to add it.`);
-        } else {
-          selectedFormat = null;
-        }
-      }));
+    // Sheet format selection binding function
+    function bindBtns(buttonsToBind) {
+      buttonsToBind.forEach(b => {
+        b.removeEventListener('click', handleSheetButtonClick); // Prevent multiple bindings
+        b.addEventListener('click', handleSheetButtonClick);
+      });
     }
 
-    // Initialize mobile UI
-    if (isMobile) {
-      setTimeout(() => {
-        updateMobileUI();
-      }, 100);
+    function handleSheetButtonClick(event) {
+      const b = event.currentTarget;
+      // Toggle selection
+      const wasActive = b.classList.contains('active');
+      document.querySelectorAll('[data-format]').forEach(btn => btn.classList.remove('active'));
+      
+      if (!wasActive) {
+        b.classList.add('active');
+        selectedFormat = b.dataset.format;
+        const sheet = appConfig.sheetFormats.find(s => s.id === selectedFormat);
+        if (sheet) {
+          showNotification(`${sheet.displayName} selected. Choose a side to add it.`);
+        }
+      } else {
+        selectedFormat = null;
+      }
+      updateMobileUI(); // Update mobile buttons after desktop selection
     }
 
     // Mobile interface management
@@ -1119,21 +1182,45 @@ async function initializePricing() {
     
     function updateMobileUI() {
       if (!isMobile) return;
-      
+
+      // Render mobile format selector buttons
+      const mobileFormatSelector = document.getElementById('mobile-format-selector');
+      mobileFormatSelector.innerHTML = '';
+      appConfig.sheetFormats.forEach(sheet => {
+        if (sheet.enabled) {
+          const button = document.createElement('button');
+          button.dataset.format = sheet.id;
+          button.textContent = sheet.displayName.split(' ')[0] + ' ' + (sheet.displayName.includes('Vertical') ? 'V' : 'H'); // A4 V, A4 H etc.
+          if (mobileSelectedFormat === sheet.id) {
+            button.classList.add('selected');
+          }
+          mobileFormatSelector.appendChild(button);
+        }
+      });
+      // Re-bind event listeners for mobile format selector
+      document.querySelectorAll('#mobile-format-selector button').forEach(btn => {
+        btn.removeEventListener('click', handleMobileFormatSelection); // Prevent multiple bindings
+        btn.addEventListener('click', handleMobileFormatSelection);
+      });
+
+
       const leftRemaining = Math.max(0, POLE_HEIGHT - poleState.left.totalHeight);
       const rightRemaining = Math.max(0, POLE_HEIGHT - poleState.right.totalHeight);
       
       // Update status info
       const mobileStatus = document.getElementById('mobile-status');
       if (mobileSelectedFormat) {
-        const needed = SHEET_DIMENSIONS[mobileSelectedFormat].height;
-        const canFitLeft = leftRemaining >= needed;
-        const canFitRight = rightRemaining >= needed;
-        
-        if (!canFitLeft && !canFitRight) {
-          mobileStatus.textContent = `${SHEET_DIMENSIONS[mobileSelectedFormat].displayName} - No space on either side`;
-        } else {
-          mobileStatus.textContent = `${SHEET_DIMENSIONS[mobileSelectedFormat].displayName} selected - Choose side`;
+        const sheet = appConfig.sheetFormats.find(s => s.id === mobileSelectedFormat);
+        if (sheet) {
+          const needed = sheet.height;
+          const canFitLeft = leftRemaining >= needed;
+          const canFitRight = rightRemaining >= needed;
+          
+          if (!canFitLeft && !canFitRight) {
+            mobileStatus.textContent = `${sheet.displayName} - No space on either side`;
+          } else {
+            mobileStatus.textContent = `${sheet.displayName} selected - Choose side`;
+          }
         }
       } else {
         mobileStatus.textContent = `${getDisplaySideName('left')}: ${Math.round(leftRemaining)}cm | ${getDisplaySideName('right')}: ${Math.round(rightRemaining)}cm available`;
@@ -1163,6 +1250,8 @@ async function initializePricing() {
       const leftItems = document.getElementById('mobile-left-items');
       const rightItems = document.getElementById('mobile-right-items');
       
+      if (!leftItems || !rightItems) return; // Ensure elements exist
+      
       // Clear existing items
       leftItems.innerHTML = '';
       rightItems.innerHTML = '';
@@ -1172,17 +1261,18 @@ async function initializePricing() {
         leftItems.innerHTML = '<div class="mobile-queue-empty">No sheets added</div>';
       } else {
         poleState.left.sheets.forEach((sheet, index) => {
+          const sheetFormat = appConfig.sheetFormats.find(s => s.id === sheet.format);
+          if (!sheetFormat) return; // Skip if format no longer exists
           const item = document.createElement('div');
           item.className = 'mobile-queue-item';
           
           const span = document.createElement('span');
-          span.textContent = SHEET_DIMENSIONS[sheet.format].displayName;
+          span.textContent = sheetFormat.displayName;
           
           const removeBtn = document.createElement('button');
           removeBtn.className = 'mobile-remove-btn';
           removeBtn.textContent = 'Remove';
           
-          // Use direct click handler with closure to capture the correct values
           removeBtn.addEventListener('click', () => {
             console.log('Removing sheet:', sheet.id, 'from left side');
             const success = removeSheetFromPole('left', sheet.id);
@@ -1202,17 +1292,18 @@ async function initializePricing() {
         rightItems.innerHTML = '<div class="mobile-queue-empty">No sheets added</div>';
       } else {
         poleState.right.sheets.forEach((sheet, index) => {
+          const sheetFormat = appConfig.sheetFormats.find(s => s.id === sheet.format);
+          if (!sheetFormat) return; // Skip if format no longer exists
           const item = document.createElement('div');
           item.className = 'mobile-queue-item';
           
           const span = document.createElement('span');
-          span.textContent = SHEET_DIMENSIONS[sheet.format].displayName;
+          span.textContent = sheetFormat.displayName;
           
           const removeBtn = document.createElement('button');
           removeBtn.className = 'mobile-remove-btn';
           removeBtn.textContent = 'Remove';
           
-          // Use direct click handler with closure to capture the correct values
           removeBtn.addEventListener('click', () => {
             console.log('Removing sheet:', sheet.id, 'from right side');
             const success = removeSheetFromPole('right', sheet.id);
@@ -1228,32 +1319,29 @@ async function initializePricing() {
       }
     }
 
-    // Mobile event listeners
-    if (isMobile) {
-      // Format selection
-      document.querySelectorAll('#mobile-format-selector button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Toggle selection
-          const wasSelected = btn.classList.contains('selected');
-          document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
-          
-          if (!wasSelected) {
-            btn.classList.add('selected');
-            mobileSelectedFormat = btn.dataset.format;
-          } else {
-            mobileSelectedFormat = null;
-          }
-          
-          updateMobileUI();
-        });
-      });
+    // Mobile format selection handler
+    function handleMobileFormatSelection(event) {
+      const btn = event.currentTarget;
+      const wasSelected = btn.classList.contains('selected');
+      document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
       
+      if (!wasSelected) {
+        btn.classList.add('selected');
+        mobileSelectedFormat = btn.dataset.format;
+      } else {
+        mobileSelectedFormat = null;
+      }
+      updateMobileUI();
+    }
+
+
+    // Mobile event listeners setup
+    if (isMobile) {
       // Side buttons
       document.getElementById('mobile-add-left').addEventListener('click', () => {
         if (mobileSelectedFormat) {
           const success = addSheetToPole('left', mobileSelectedFormat);
           if (success) {
-            // Clear selection after successful add
             mobileSelectedFormat = null;
             document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
             updateMobileUI();
@@ -1265,7 +1353,6 @@ async function initializePricing() {
         if (mobileSelectedFormat) {
           const success = addSheetToPole('right', mobileSelectedFormat);
           if (success) {
-            // Clear selection after successful add
             mobileSelectedFormat = null;
             document.querySelectorAll('#mobile-format-selector button').forEach(b => b.classList.remove('selected'));
             updateMobileUI();
@@ -1275,18 +1362,27 @@ async function initializePricing() {
       
       // Queue toggle
       document.getElementById('mobile-queue-btn').addEventListener('click', () => {
-        document.getElementById('mobile-queue-overlay').style.display = 'block';
-        updateMobileQueue();
+        const queueOverlay = document.getElementById('mobile-queue-overlay');
+        if (queueOverlay) {
+          queueOverlay.style.display = 'block';
+          updateMobileQueue();
+        }
       });
       
       document.getElementById('mobile-queue-close').addEventListener('click', () => {
-        document.getElementById('mobile-queue-overlay').style.display = 'none';
+        const queueOverlay = document.getElementById('mobile-queue-overlay');
+        if (queueOverlay) {
+          queueOverlay.style.display = 'none';
+        }
       });
       
       // Close queue when clicking outside content
       document.getElementById('mobile-queue-overlay').addEventListener('click', (e) => {
         if (e.target.id === 'mobile-queue-overlay') {
-          document.getElementById('mobile-queue-overlay').style.display = 'none';
+          const queueOverlay = document.getElementById('mobile-queue-overlay');
+          if (queueOverlay) {
+            queueOverlay.style.display = 'none';
+          }
         }
       });
     }
@@ -1297,19 +1393,14 @@ async function initializePricing() {
       renderer.render(scene, camera);
     })();
 
-    // Initialize UI
-    setTimeout(() => {
-      updateUI();
-    }, 100);
+    // Initialize configuration and UI when the window loads
+    window.onload = function() {
+        initializeConfig();
+    };
 
-    // Bind desktop buttons  
-    if (!isMobile) {
-      bindBtns(document.querySelectorAll('#hotspot-panel button'));
-    }
-
-    // Make functions globally accessible for mobile
+    // Make functions globally accessible for mobile (e.g. for remove buttons in queue)
     window.removeSheetFromPole = removeSheetFromPole;
-    window.updateMobileUI = updateMobileUI;
+    window.updateMobileUI = updateMobileUI; // This is a crucial function for mobile updates
   </script>
 </body>
 </html>

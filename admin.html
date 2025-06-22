@@ -6,6 +6,7 @@
   <title>FLOW-FOIL Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+    /* Basic Reset & Font */
     * { 
       margin: 0; 
       padding: 0; 
@@ -13,6 +14,7 @@
       font-family: 'Poppins', sans-serif;
     }
     
+    /* Color Variables */
     :root {
       --primary: #000;
       --secondary: #fff;
@@ -20,185 +22,635 @@
       --blue: #3498db;
       --red: #e74c3c;
       --green: #27ae60;
-      --gray-light: #f5f5f5;
+      --gray-light: #f8f9fa;
       --gray: #e0e0e0;
-      --gray-dark: #888;
+      --gray-medium: #bbb;
+      --gray-dark: #666;
+      --shadow: 0 2px 10px rgba(0,0,0,0.08);
+      --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+      --border-radius: 8px;
+      --border-radius-small: 6px;
     }
     
+    /* Body Styles */
     body {
-      background-color: var(--gray-light);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       min-height: 100vh;
-      padding: 20px;
+      padding: 15px;
     }
     
+    /* Login Container */
     .login-container {
       max-width: 400px;
-      margin: 100px auto;
+      margin: 60px auto;
       background-color: var(--secondary);
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
     }
     
+    /* Dashboard Container */
     .dashboard-container {
-      max-width: 800px;
-      margin: 40px auto;
+      max-width: 900px;
+      margin: 20px auto;
       background-color: var(--secondary);
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
       overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
     }
     
+    /* Dashboard Header */
     .dashboard-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 15px 20px;
+      padding: 20px 25px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
     
+    .dashboard-header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    /* Dashboard Content */
     .dashboard-content {
-      padding: 20px;
+      padding: 25px;
     }
     
+    /* Headings */
     h1 {
       font-size: 24px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-align: center;
+      color: var(--primary);
+      font-weight: 600;
     }
     
     h2 {
       font-size: 18px;
-      margin: 25px 0 15px 0;
+      margin: 30px 0 20px 0;
+      color: var(--primary);
+      font-weight: 600;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
     }
     
+    /* Messages (Success/Error) */
     .message {
-      padding: 12px;
-      margin-bottom: 20px;
-      border-radius: 4px;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      border-radius: var(--border-radius-small);
+      text-align: center;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .message.success {
       background-color: rgba(39, 174, 96, 0.1);
       color: var(--green);
+      border: 1px solid rgba(39, 174, 96, 0.3);
     }
     
     .message.error {
       background-color: rgba(231, 76, 60, 0.1);
       color: var(--red);
+      border: 1px solid rgba(231, 76, 60, 0.3);
     }
     
+    /* Form Elements */
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
+      color: var(--primary);
+      font-size: 14px;
     }
     
     input[type="password"],
-    input[type="number"] {
+    input[type="number"],
+    input[type="text"] {
       width: 100%;
-      padding: 10px;
-      border: 1px solid var(--gray);
-      border-radius: 4px;
+      padding: 12px 15px;
+      border: 2px solid var(--gray);
+      border-radius: var(--border-radius-small);
       font-size: 14px;
+      transition: all 0.3s ease;
+      background-color: #fff;
+    }
+    
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(6, 214, 162, 0.1);
     }
     
     input[type="number"] {
-      width: 80px;
+      width: 90px;
     }
-    
+
+    /* Buttons */
     button {
-      background-color: var(--blue);
+      background: linear-gradient(135deg, var(--blue) 0%, #2980b9 100%);
       color: white;
       border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
+      padding: 12px 18px;
+      border-radius: var(--border-radius-small);
       cursor: pointer;
       font-size: 14px;
-      transition: background-color 0.3s;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
     }
     
-    button:hover {
-      background-color: #2980b9;
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(135deg, #2980b9 0%, var(--blue) 100%);
     }
     
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     button.logout {
-      background-color: var(--red);
+      background: linear-gradient(135deg, var(--red) 0%, #c0392b 100%);
+      box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
     }
     
-    button.logout:hover {
-      background-color: #c0392b;
+    button.logout:hover:not(:disabled) {
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      background: linear-gradient(135deg, #c0392b 0%, var(--red) 100%);
     }
     
     button.save {
-      background-color: var(--green);
-      margin-top: 20px;
+      background: linear-gradient(135deg, var(--green) 0%, #219653 100%);
+      margin-top: 25px;
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
     }
     
-    button.save:hover {
-      background-color: #219653;
+    button.save:hover:not(:disabled) {
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+      background: linear-gradient(135deg, #219653 0%, var(--green) 100%);
     }
     
     button.back {
-      background-color: var(--gray-dark);
-      margin-right: 10px;
+      background: linear-gradient(135deg, var(--gray-dark) 0%, #555 100%);
+      box-shadow: 0 2px 8px rgba(102, 102, 102, 0.3);
     }
     
-    button.back:hover {
-      background-color: #666;
+    button.back:hover:not(:disabled) {
+      box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
+      background: linear-gradient(135deg, #555 0%, var(--gray-dark) 100%);
     }
-    
-    .price-item {
+
+    button.remove {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+      padding: 8px 12px;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(255, 107, 107, 0.3);
+    }
+
+    button.remove:hover:not(:disabled) {
+      box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
+      background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
+    }
+
+    /* Price Item Layout */
+    .price-item, .material-item, .sheet-item {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-bottom: 1px solid var(--gray-light);
+      background-color: #fafbfc;
+      border-radius: var(--border-radius-small);
+      transition: all 0.3s ease;
     }
-    
-    .price-item label {
-      min-width: 150px;
+
+    .price-item:hover, .material-item:hover, .sheet-item:hover {
+      background-color: #f1f3f4;
+      transform: translateX(5px);
+    }
+
+    .price-item:last-child, .material-item:last-child, .sheet-item:last-child {
+        border-bottom: none;
+    }
+
+    .price-item label, .material-item label, .sheet-item label {
+      min-width: 140px;
       margin-bottom: 0;
+      flex-shrink: 0;
+      font-weight: 500;
+      color: var(--primary);
     }
     
-    .price-item input {
+    .price-item input, .material-item input {
       margin-right: 10px;
+      flex-grow: 1;
+      max-width: 120px;
+    }
+
+    .price-item span, .material-item span, .sheet-item span {
+      margin-right: 15px;
+      font-weight: 600;
+      color: var(--gray-dark);
+    }
+
+    .material-item .toggle-switch, .sheet-item .toggle-switch {
+        margin-left: auto;
+        margin-right: 10px;
+    }
+
+    .sheet-item .sheet-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
     }
     
-    .sheet-prices {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    /* Improved Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
     }
-    
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        width:5vw;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #ccc 0%, #aaa 100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 26px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+        background: linear-gradient(135deg, var(--accent) 0%, #05c195 100%);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 10px rgba(6, 214, 162, 0.3);
+    }
+
+    input:focus + .slider {
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 0 3px rgba(6, 214, 162, 0.2);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(24px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Sheet Prices Grid */
+    .sheet-prices-grid {
+     
+      grid-template-columns: 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .sheet-add-section {
+        border: 2px dashed var(--gray-medium);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        margin-top: 35px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transition: all 0.3s ease;
+    }
+
+    .sheet-add-section:hover {
+        border-color: var(--accent);
+        background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+    }
+
+    .sheet-add-section h3 {
+        margin-bottom: 20px;
+        font-size: 18px;
+        color: var(--primary);
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .sheet-add-section .form-group {
+        margin-bottom: 15px;
+    }
+
+    .sheet-add-section .form-row {
+        display: flex;
+        gap: 15px;
+        align-items: end;
+        margin-bottom: 15px;
+    }
+
+    .sheet-add-section .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .sheet-add-section input[type="text"],
+    .sheet-add-section input[type="number"] {
+        width: 100%;
+    }
+
+    .sheet-add-section button {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 15px;
+        background: linear-gradient(135deg, var(--accent) 0%, #05c195 100%);
+        box-shadow: 0 2px 8px rgba(6, 214, 162, 0.3);
+    }
+
+    .sheet-add-section button:hover:not(:disabled) {
+        box-shadow: 0 4px 15px rgba(6, 214, 162, 0.4);
+        background: linear-gradient(135deg, #05c195 0%, var(--accent) 100%);
+    }
+
+    /* Instructions Box */
+    .instructions {
+        margin-top: 35px;
+        padding: 25px;
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--gray);
+        box-shadow: var(--shadow);
+    }
+
+    .instructions h3 {
+        margin-bottom: 15px;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .instructions ul {
+        margin-left: 20px;
+        line-height: 1.7;
+        color: var(--gray-dark);
+    }
+
+    .instructions li {
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    /* Loader */
     .loader {
       display: inline-block;
-      width: 20px;
-      height: 20px;
-      margin-left: 10px;
-      border: 3px solid rgba(255,255,255,.3);
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,.3);
       border-radius: 50%;
       border-top-color: white;
       animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
     
+    /* Back Link */
+    .back-link {
+        margin-top: 25px;
+        text-align: center;
+    }
+
+    .back-link a {
+        color: var(--gray-dark);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+        color: var(--accent);
+    }
+    
+    /* Mobile Responsive Styles */
     @media (max-width: 768px) {
-      .sheet-prices {
-        grid-template-columns: 1fr;
-      }
+        body {
+            padding: 10px;
+        }
+
+        .login-container {
+            margin: 30px auto;
+            padding: 30px 20px;
+        }
+
+        .dashboard-container {
+            margin: 15px auto;
+        }
+
+        .dashboard-header {
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .header-actions {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .dashboard-content {
+            padding: 20px 15px;
+        }
+
+        .price-item, .material-item, .sheet-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .price-item label, .material-item label, .sheet-item label {
+            min-width: auto;
+            margin-bottom: 8px;
+        }
+
+        .material-item .toggle-switch, .sheet-item .toggle-switch {
+            margin-left: 0;
+            margin-right: 0;
+            align-self: flex-start;
+        }
+
+        .sheet-item .sheet-actions {
+            margin-left: 0;
+            justify-content: flex-start;
+        }
+
+        .price-item input, .material-item input {
+            max-width: none;
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+
+        .sheet-add-section {
+            padding: 20px 15px;
+        }
+
+        .sheet-add-section .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .instructions {
+            padding: 20px 15px;
+        }
+
+        .instructions ul {
+            margin-left: 15px;
+        }
+
+        h2 {
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 13px;
+        }
+
+        button.save {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-header {
+            padding: 12px 15px;
+        }
+
+        .dashboard-content {
+            padding: 15px 12px;
+        }
+
+        .header-actions {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .header-actions button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .toggle-switch {
+            width: 45px;
+            height: 24px;
+        }
+
+        .slider:before {
+            height: 18px;
+            width: 18px;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(21px);
+        }
+    }
+
+    /* Larger screens - two columns for sheet grid */
+    @media (min-width: 769px) {
+        .sheet-prices-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .sheet-add-section .form-row {
+            display: flex;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .dashboard-container {
+            max-width: 1000px;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+        }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- Content will be rendered here -->
+    <!-- Content will be rendered here by JavaScript -->
   </div>
 
   <script>
@@ -209,51 +661,60 @@
       message: '',
       messageType: '',
       isLoading: false,
-      prices: {
+      // Default configuration structure - will be loaded from API
+      config: { 
         basePrice: 100,
         materialExtra: {
-          metal: 0,
-          glass: 10
+          metal: { price: 0, enabled: true },
+          glass: { price: 10, enabled: true }
         },
-        sheetPrices: {
-          a4vertical: 15,
-          a4landscape: 17,
-          a5vertical: 12,
-          a5landscape: 14,
-          a3vertical: 21,
-          a3landscape: 27
-        }
+        sheetFormats: [
+          { id: 'a4vertical', displayName: 'A4 Vertical (30cm)', height: 21, price: 15, enabled: true, glbLeft: 'a4vertlf8', glbRight: 'a4vertr8' },
+          { id: 'a4landscape', displayName: 'A4 Landscape (21cm)', height: 21, price: 17, enabled: true, glbLeft: 'a4landslf8', glbRight: 'a4landsr8' },
+          { id: 'a5vertical', displayName: 'A5 Vertical (21cm)', height: 21, price: 12, enabled: true, glbLeft: 'a3vertlf8', glbRight: 'a3vertr8' },
+          { id: 'a5landscape', displayName: 'A5 Landscape (15cm)', height: 21, price: 14, enabled: true, glbLeft: 'a3landslf8', glbRight: 'a3landsr8' },
+          { id: 'a3vertical', displayName: 'A3 Vertical (42cm)', height: 30, price: 21, enabled: true, glbLeft: 'a5vertlf8', glbRight: 'a5vertr8' },
+          { id: 'a3landscape', displayName: 'A3 Landscape (30cm)', height: 27, price: 27, enabled: true, glbLeft: 'a5landslf8', glbRight: 'a5landsr8' }
+        ]
+      },
+      // State for adding new sheet
+      newSheet: {
+        displayName: '',
+        height: '',
+        price: '',
+        glbLeft: '',
+        glbRight: ''
       }
     };
 
-    // API endpoints
+    // API endpoints - now point to /api/config
     const API = {
-      PRICES: '/api/prices',
+      CONFIG: '/api/config',
       AUTH: '/api/auth'
     };
 
-    // Load prices from server
-    async function loadPrices() {
+    // Load configuration from server
+    async function loadConfig() {
       try {
         state.isLoading = true;
-        render();
+        render(); // Re-render to show loading state
         
-        const response = await fetch(API.PRICES);
+        const response = await fetch(API.CONFIG);
         if (!response.ok) {
-          throw new Error('Failed to load prices');
+          throw new Error('Failed to load configuration');
         }
         
         const data = await response.json();
-        state.prices = data;
+        state.config = data;
         state.message = '';
         state.messageType = '';
       } catch (error) {
-        console.error('Error loading prices:', error);
-        state.message = 'Error loading prices. Please try again.';
+        console.error('Error loading config:', error);
+        state.message = 'Error loading configuration. Please try again.';
         state.messageType = 'error';
       } finally {
         state.isLoading = false;
-        render();
+        render(); // Re-render to show loaded data or error
       }
     }
 
@@ -277,17 +738,16 @@
         if (data.success) {
           state.isAuthenticated = true;
           state.message = '';
-          loadPrices();
+          await loadConfig(); // Load config immediately after successful login
         } else {
           state.message = 'Invalid password. Please try again.';
           state.messageType = 'error';
-          state.isLoading = false;
-          render();
         }
       } catch (error) {
         console.error('Login error:', error);
         state.message = 'Error during login. Please try again.';
         state.messageType = 'error';
+      } finally {
         state.isLoading = false;
         render();
       }
@@ -302,64 +762,144 @@
       render();
     }
 
-    // Price change handler
+    // Handle changes to base price, material price, or sheet price
     function handlePriceChange(type, key, value) {
       const numValue = Number(value);
-      if (isNaN(numValue)) return;
+      if (isNaN(numValue) || numValue < 0) { // Basic validation
+        state.message = 'Price must be a non-negative number.';
+        state.messageType = 'error';
+        render();
+        return;
+      }
+      state.message = ''; // Clear previous messages
+      state.messageType = '';
 
       if (type === 'base') {
-        state.prices.basePrice = numValue;
+        state.config.basePrice = numValue;
       } else if (type === 'material') {
-        state.prices.materialExtra[key] = numValue;
+        state.config.materialExtra[key].price = numValue;
       } else if (type === 'sheet') {
-        state.prices.sheetPrices[key] = numValue;
+        // Find the sheet by ID and update its price
+        const sheet = state.config.sheetFormats.find(s => s.id === key);
+        if (sheet) sheet.price = numValue;
       }
+      render(); // Re-render to reflect changes in UI immediately
     }
 
-    // Save prices to server
-    async function savePrices() {
+    // Handle toggle for enabled status of materials or sheets
+    function handleToggleChange(type, key, checked) {
+      state.message = ''; // Clear previous messages
+      state.messageType = '';
+      if (type === 'material') {
+        state.config.materialExtra[key].enabled = checked;
+      } else if (type === 'sheet') {
+        const sheet = state.config.sheetFormats.find(s => s.id === key);
+        if (sheet) sheet.enabled = checked;
+      }
+      render(); // Re-render to reflect changes
+    }
+
+    // Handle input for new sheet fields
+    function handleNewSheetInputChange(field, value) {
+      state.newSheet[field] = value;
+    }
+
+    // Add new sheet format
+    function handleAddSheet() {
+      const { displayName, height, price, glbLeft, glbRight } = state.newSheet;
+
+      // Basic validation for new sheet fields
+      if (!displayName || !height || !price || !glbLeft || !glbRight) {
+        state.message = 'All fields for new sheet must be filled.';
+        state.messageType = 'error';
+        render();
+        return;
+      }
+      if (isNaN(Number(height)) || Number(height) <= 0 || isNaN(Number(price)) || Number(price) < 0) {
+        state.message = 'Height must be a positive number, price must be a non-negative number.';
+        state.messageType = 'error';
+        render();
+        return;
+      }
+
+      // Generate a unique ID (simple slug from displayName for now)
+      const id = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '').replace(/(^_+|_+$)/g, '');
+      if (state.config.sheetFormats.some(s => s.id === id)) {
+        state.message = `A sheet with similar display name (${displayName}) already exists. Please use a more unique name.`;
+        state.messageType = 'error';
+        render();
+        return;
+      }
+
+      const newSheetFormat = {
+        id: id,
+        displayName: displayName,
+        height: Number(height),
+        price: Number(price),
+        enabled: true, // New sheets are enabled by default
+        glbLeft: glbLeft,
+        glbRight: glbRight
+      };
+
+      state.config.sheetFormats.push(newSheetFormat);
+      
+      // Clear new sheet input fields
+      state.newSheet = { displayName: '', height: '', price: '', glbLeft: '', glbRight: '' };
+      state.message = 'New sheet format added to configuration. Remember to Save Changes!';
+      state.messageType = 'success';
+      render();
+    }
+
+    // Delete sheet format
+    function handleDeleteSheet(idToDelete) {
+      state.config.sheetFormats = state.config.sheetFormats.filter(s => s.id !== idToDelete);
+      state.message = 'Sheet format deleted from configuration. Remember to Save Changes!';
+      state.messageType = 'success';
+      render();
+    }
+
+    // Save configuration to server
+    async function saveConfig() {
       try {
         state.isLoading = true;
         state.message = '';
-        render();
+        render(); // Show loading state
         
-        const response = await fetch(API.PRICES, {
+        const response = await fetch(API.CONFIG, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(state.prices)
+          body: JSON.stringify(state.config)
         });
         
         if (!response.ok) {
-          throw new Error('Failed to save prices');
+          throw new Error('Failed to save configuration');
         }
         
         const data = await response.json();
         
         if (data.success) {
-          state.message = 'Prices saved successfully! The configurator will now use these prices.';
+          state.message = 'Configuration saved successfully! The configurator will now use these settings.';
           state.messageType = 'success';
         } else {
-          state.message = data.message || 'Error saving prices.';
+          state.message = data.message || 'Error saving configuration.';
           state.messageType = 'error';
         }
       } catch (error) {
-        console.error('Error saving prices:', error);
-        state.message = 'Error saving prices. Please try again.';
+        console.error('Error saving config:', error);
+        state.message = 'Error saving configuration. Please try again.';
         state.messageType = 'error';
       } finally {
         state.isLoading = false;
-        render();
+        render(); // Update UI with success/error message
       }
     }
 
-    // Format sheet names for display
-    function formatSheetName(format) {
-      return format
-        .replace(/([a-z])([0-9])/i, '$1$2 ')
-        .replace('landscape', 'Landscape')
-        .replace('vertical', 'Vertical');
+    // Format sheet names for display (from id to readable)
+    function formatSheetName(id) {
+      const sheet = state.config.sheetFormats.find(s => s.id === id);
+      return sheet ? sheet.displayName : id.replace(/([a-z])([0-9])/i, '$1$2 ').replace('landscape', ' Landscape').replace('vertical', ' Vertical');
     }
 
     // Render login page
@@ -375,6 +915,7 @@
               id="password" 
               value="${state.password}"
               placeholder="Enter admin password"
+              oninput="handlePasswordInput(event)"
               onkeypress="if(event.key === 'Enter') handleLogin()"
             />
           </div>
@@ -382,11 +923,16 @@
             Login
             ${state.isLoading ? '<span class="loader"></span>' : ''}
           </button>
-          <div style="margin-top: 20px; text-align: center;">
-            <a href="/" style="color: var(--gray-dark); text-decoration: none;">← Back to Configurator</a>
+          <div class="back-link">
+            <a href="/">← Back to Configurator</a>
           </div>
         </div>
       `;
+    }
+
+    // Handle password input separately to avoid full re-render on every keystroke
+    function handlePasswordInput(event) {
+        state.password = event.target.value;
     }
 
     // Render dashboard page
@@ -394,8 +940,8 @@
       return `
         <div class="dashboard-container">
           <div class="dashboard-header">
-            <h1 style="margin-bottom: 0; text-align: left;">FLOW-FOIL Admin Dashboard</h1>
-            <div>
+            <h1>FLOW-FOIL Admin Dashboard</h1>
+            <div class="header-actions">
               <button class="back" onclick="window.location.href='/'">Back to Configurator</button>
               <button class="logout" onclick="handleLogout()">Logout</button>
             </div>
@@ -410,54 +956,115 @@
               <input
                 type="number"
                 min="0"
-                value="${state.prices.basePrice}"
+                value="${state.config.basePrice}"
                 onchange="handlePriceChange('base', null, this.value)"
               />
               <span>€</span>
             </div>
             
-            <h2>Material Extras</h2>
-            ${Object.entries(state.prices.materialExtra).map(([material, price]) => `
-              <div class="price-item">
-                <label style="text-transform: capitalize;">${material}:</label>
+            <h2>Material Settings</h2>
+            ${Object.entries(state.config.materialExtra).map(([materialId, data]) => `
+              <div class="material-item">
+                <label style="text-transform: capitalize;">${materialId}:</label>
                 <input
                   type="number"
                   min="0"
-                  value="${price}"
-                  onchange="handlePriceChange('material', '${material}', this.value)"
+                  value="${data.price}"
+                  onchange="handlePriceChange('material', '${materialId}', this.value)"
                 />
                 <span>€</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" 
+                    ${data.enabled ? 'checked' : ''} 
+                    onchange="handleToggleChange('material', '${materialId}', this.checked)">
+                  <span class="slider"></span>
+                </label>
               </div>
             `).join('')}
             
-            <h2>Sheet Prices</h2>
-            <div class="sheet-prices">
-              ${Object.entries(state.prices.sheetPrices).map(([format, price]) => `
-                <div class="price-item">
-                  <label>${formatSheetName(format)}:</label>
+            <h2>Sheet Formats</h2>
+            <div class="sheet-prices-grid">
+              ${state.config.sheetFormats.map(sheet => `
+                <div class="sheet-item">
+                  <label>${sheet.displayName}:</label>
                   <input
                     type="number"
                     min="0"
-                    value="${price}"
-                    onchange="handlePriceChange('sheet', '${format}', this.value)"
+                    value="${sheet.price}"
+                    onchange="handlePriceChange('sheet', '${sheet.id}', this.value)"
                   />
                   <span>€</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" 
+                      ${sheet.enabled ? 'checked' : ''} 
+                      onchange="handleToggleChange('sheet', '${sheet.id}', this.checked)">
+                    <span class="slider"></span>
+                  </label>
+                  <div class="sheet-actions">
+                    <button class="remove" onclick="handleDeleteSheet('${sheet.id}')">Delete</button>
+                  </div>
                 </div>
               `).join('')}
             </div>
+
+            <div class="sheet-add-section">
+                <h3>Add New Sheet Format</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new-sheet-display-name">Display Name</label>
+                        <input type="text" id="new-sheet-display-name" 
+                            value="${state.newSheet.displayName}"
+                            oninput="handleNewSheetInputChange('displayName', this.value)" 
+                            placeholder="e.g., A7 Vertical (10cm)">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-sheet-height">Height (cm)</label>
+                        <input type="number" id="new-sheet-height" min="0.1" step="0.1"
+                            value="${state.newSheet.height}"
+                            oninput="handleNewSheetInputChange('height', this.value)" 
+                            placeholder="10">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new-sheet-price">Price (€)</label>
+                        <input type="number" id="new-sheet-price" min="0"
+                            value="${state.newSheet.price}"
+                            oninput="handleNewSheetInputChange('price', this.value)" 
+                            placeholder="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-sheet-glb-left">GLB Left Name</label>
+                        <input type="text" id="new-sheet-glb-left" 
+                            value="${state.newSheet.glbLeft}"
+                            oninput="handleNewSheetInputChange('glbLeft', this.value)" 
+                            placeholder="a7vertlf">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-sheet-glb-right">GLB Right Name</label>
+                    <input type="text" id="new-sheet-glb-right" 
+                        value="${state.newSheet.glbRight}"
+                        oninput="handleNewSheetInputChange('glbRight', this.value)" 
+                        placeholder="a7vertr">
+                </div>
+                <button onclick="handleAddSheet()">Add Sheet Format</button>
+            </div>
             
-            <button class="save" onclick="savePrices()" ${state.isLoading ? 'disabled' : ''}>
-              Save Changes
+            <button class="save" onclick="saveConfig()" ${state.isLoading ? 'disabled' : ''}>
+              Save All Changes
               ${state.isLoading ? '<span class="loader"></span>' : ''}
             </button>
             
-            <div style="margin-top: 30px; padding: 15px; background-color: var(--gray-light); border-radius: 4px;">
-              <h3 style="margin-bottom: 10px;">Instructions:</h3>
-              <ul style="margin-left: 20px; line-height: 1.6;">
-                <li>Update prices above and click "Save Changes"</li>
-                <li>The configurator will automatically load new prices</li>
-                <li>Users can refresh prices using the ↻ button in the configurator</li>
-                <li>Changes are saved to the server and persist between sessions</li>
+            <div class="instructions">
+              <h3>📋 Instructions</h3>
+              <ul>
+                <li><strong>Prices:</strong> Update base price, material extras, and sheet format prices using the number inputs.</li>
+                <li><strong>Enable/Disable:</strong> Use the toggle switches to enable or disable materials and sheet formats in the configurator.</li>
+                <li><strong>Add Sheets:</strong> Create new sheet formats by filling all fields. Ensure the corresponding GLB model files exist in your '3dmodels' folder.</li>
+                <li><strong>Delete Sheets:</strong> Remove unwanted sheet formats using the Delete button.</li>
+                <li><strong>Save Changes:</strong> Always click "Save All Changes" to apply modifications to the live configurator.</li>
+                <li><strong>GLB Files:</strong> GLB model names should match the pattern (e.g., 'a7vertlf.glb', 'a7vertr.glb') for left and right orientations.</li>
               </ul>
             </div>
           </div>
@@ -468,25 +1075,25 @@
     // Main render function
     function render() {
       const app = document.getElementById('app');
-      app.innerHTML = state.isAuthenticated ? renderDashboard() : renderLoginPage();
-      
-      // Add event listener to password field
-      if (!state.isAuthenticated) {
-        const passwordField = document.getElementById('password');
-        passwordField.addEventListener('input', (e) => {
-          state.password = e.target.value;
-        });
+      if (app) {
+          app.innerHTML = state.isAuthenticated ? renderDashboard() : renderLoginPage();
       }
     }
 
-    // Initialize
+    // Initialize on page load
     render();
 
     // Expose handlers to global scope
     window.handleLogin = handleLogin;
     window.handleLogout = handleLogout;
     window.handlePriceChange = handlePriceChange;
-    window.savePrices = savePrices;
+    window.handleToggleChange = handleToggleChange;
+    window.handleNewSheetInputChange = handleNewSheetInputChange;
+    window.handleAddSheet = handleAddSheet;
+    window.handleDeleteSheet = handleDeleteSheet;
+    window.saveConfig = saveConfig;
+    window.handlePasswordInput = handlePasswordInput;
+
   </script>
 </body>
 </html>
